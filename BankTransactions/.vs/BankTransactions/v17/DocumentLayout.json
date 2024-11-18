@@ -1,24 +1,24 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\PasupathiKumarS\\Downloads\\Asp.Net-Core-6.0-MVC-CRUD-Operations-with-EF-Core-main\\BankTransactions\\",
+  "WorkspaceRootPath": "C:\\Users\\PasupathiKumarS\\Downloads\\Banking-Web-Prage-ASP\\BankTransactions\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A594427C-1A4A-47D3-BAC7-C52EF491CF9B}|BankTransactions.csproj|c:\\users\\pasupathikumars\\downloads\\asp.net-core-6.0-mvc-crud-operations-with-ef-core-main\\banktransactions\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{A594427C-1A4A-47D3-BAC7-C52EF491CF9B}|BankTransactions.csproj|c:\\users\\pasupathikumars\\downloads\\banking-web-prage-asp\\banktransactions\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A594427C-1A4A-47D3-BAC7-C52EF491CF9B}|BankTransactions.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A594427C-1A4A-47D3-BAC7-C52EF491CF9B}|BankTransactions.csproj|c:\\users\\pasupathikumars\\downloads\\asp.net-core-6.0-mvc-crud-operations-with-ef-core-main\\banktransactions\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "AbsoluteMoniker": "D:0:0:{A594427C-1A4A-47D3-BAC7-C52EF491CF9B}|BankTransactions.csproj|c:\\users\\pasupathikumars\\downloads\\banking-web-prage-asp\\banktransactions\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{A594427C-1A4A-47D3-BAC7-C52EF491CF9B}|BankTransactions.csproj|solutionrelative:appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Program Files\\dotnet\\sdk\\9.0.100\\Sdks\\Microsoft.NET.Sdk.StaticWebAssets\\targets\\Microsoft.NET.Sdk.StaticWebAssets.Pack.targets||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A594427C-1A4A-47D3-BAC7-C52EF491CF9B}|BankTransactions.csproj|c:\\users\\pasupathikumars\\downloads\\asp.net-core-6.0-mvc-crud-operations-with-ef-core-main\\banktransactions\\banktransactions.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "AbsoluteMoniker": "D:0:0:{A594427C-1A4A-47D3-BAC7-C52EF491CF9B}|BankTransactions.csproj|c:\\users\\pasupathikumars\\downloads\\banking-web-prage-asp\\banktransactions\\banktransactions.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
       "RelativeMoniker": "D:0:0:{A594427C-1A4A-47D3-BAC7-C52EF491CF9B}|BankTransactions.csproj|solutionrelative:banktransactions.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A594427C-1A4A-47D3-BAC7-C52EF491CF9B}|BankTransactions.csproj|c:\\users\\pasupathikumars\\downloads\\asp.net-core-6.0-mvc-crud-operations-with-ef-core-main\\banktransactions\\controllers\\transactioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{A594427C-1A4A-47D3-BAC7-C52EF491CF9B}|BankTransactions.csproj|c:\\users\\pasupathikumars\\downloads\\banking-web-prage-asp\\banktransactions\\controllers\\transactioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A594427C-1A4A-47D3-BAC7-C52EF491CF9B}|BankTransactions.csproj|solutionrelative:controllers\\transactioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
@@ -41,18 +41,17 @@
               "RelativeToolTip": "..\\..\\..\\..\\..\\Program Files\\dotnet\\sdk\\9.0.100\\Sdks\\Microsoft.NET.Sdk.StaticWebAssets\\targets\\Microsoft.NET.Sdk.StaticWebAssets.Pack.targets",
               "ViewState": "AgIAAJkAAAAAAAAAAAAhwJ8AAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003801|",
-              "WhenOpened": "2024-11-18T09:27:50.37Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-11-18T09:27:50.37Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\PasupathiKumarS\\Downloads\\Asp.Net-Core-6.0-MVC-CRUD-Operations-with-EF-Core-main\\BankTransactions\\Program.cs",
+              "DocumentMoniker": "C:\\Users\\PasupathiKumarS\\Downloads\\Banking-Web-Prage-ASP\\BankTransactions\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "C:\\Users\\PasupathiKumarS\\Downloads\\Asp.Net-Core-6.0-MVC-CRUD-Operations-with-EF-Core-main\\BankTransactions\\Program.cs",
+              "ToolTip": "C:\\Users\\PasupathiKumarS\\Downloads\\Banking-Web-Prage-ASP\\BankTransactions\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAABgAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-11-18T07:51:30.173Z",
               "EditorCaption": ""
@@ -61,22 +60,21 @@
               "$type": "Document",
               "DocumentIndex": 1,
               "Title": "appsettings.Development.json",
-              "DocumentMoniker": "C:\\Users\\PasupathiKumarS\\Downloads\\Asp.Net-Core-6.0-MVC-CRUD-Operations-with-EF-Core-main\\BankTransactions\\appsettings.Development.json",
+              "DocumentMoniker": "C:\\Users\\PasupathiKumarS\\Downloads\\Banking-Web-Prage-ASP\\BankTransactions\\appsettings.Development.json",
               "RelativeDocumentMoniker": "appsettings.Development.json",
-              "ToolTip": "C:\\Users\\PasupathiKumarS\\Downloads\\Asp.Net-Core-6.0-MVC-CRUD-Operations-with-EF-Core-main\\BankTransactions\\appsettings.Development.json",
+              "ToolTip": "C:\\Users\\PasupathiKumarS\\Downloads\\Banking-Web-Prage-ASP\\BankTransactions\\appsettings.Development.json",
               "RelativeToolTip": "appsettings.Development.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAWAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2024-11-18T07:18:25.897Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-11-18T07:18:25.897Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 4,
               "Title": "TransactionController.cs",
-              "DocumentMoniker": "C:\\Users\\PasupathiKumarS\\Downloads\\Asp.Net-Core-6.0-MVC-CRUD-Operations-with-EF-Core-main\\BankTransactions\\Controllers\\TransactionController.cs",
+              "DocumentMoniker": "C:\\Users\\PasupathiKumarS\\Downloads\\Banking-Web-Prage-ASP\\BankTransactions\\Controllers\\TransactionController.cs",
               "RelativeDocumentMoniker": "Controllers\\TransactionController.cs",
-              "ToolTip": "C:\\Users\\PasupathiKumarS\\Downloads\\Asp.Net-Core-6.0-MVC-CRUD-Operations-with-EF-Core-main\\BankTransactions\\Controllers\\TransactionController.cs",
+              "ToolTip": "C:\\Users\\PasupathiKumarS\\Downloads\\Banking-Web-Prage-ASP\\BankTransactions\\Controllers\\TransactionController.cs",
               "RelativeToolTip": "Controllers\\TransactionController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAABDAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -86,14 +84,13 @@
               "$type": "Document",
               "DocumentIndex": 3,
               "Title": "BankTransactions.csproj",
-              "DocumentMoniker": "C:\\Users\\PasupathiKumarS\\Downloads\\Asp.Net-Core-6.0-MVC-CRUD-Operations-with-EF-Core-main\\BankTransactions\\BankTransactions.csproj",
+              "DocumentMoniker": "C:\\Users\\PasupathiKumarS\\Downloads\\Banking-Web-Prage-ASP\\BankTransactions\\BankTransactions.csproj",
               "RelativeDocumentMoniker": "BankTransactions.csproj",
-              "ToolTip": "C:\\Users\\PasupathiKumarS\\Downloads\\Asp.Net-Core-6.0-MVC-CRUD-Operations-with-EF-Core-main\\BankTransactions\\BankTransactions.csproj",
+              "ToolTip": "C:\\Users\\PasupathiKumarS\\Downloads\\Banking-Web-Prage-ASP\\BankTransactions\\BankTransactions.csproj",
               "RelativeToolTip": "BankTransactions.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAA6AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2024-11-18T07:10:28.338Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-11-18T07:10:28.338Z"
             }
           ]
         }
