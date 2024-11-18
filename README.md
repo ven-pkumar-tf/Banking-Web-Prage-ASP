@@ -45,3 +45,6 @@ alt="Video Tutorial for CRUD Operation in Asp.Net Core 6.0 MVC and EF Core" widt
 | MS SQL                    |https://goo.gl/MLYS9e |   |
 | Crystal Report            |https://goo.gl/5Vou7t |   |
 | CG Exercises in C Program |https://goo.gl/qEWJCs |   |
+
+
+
