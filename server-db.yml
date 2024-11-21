@@ -29,7 +29,7 @@ metadata:
   name: banking-web-app-service
 spec:
   selector:
-    app: banking-web-app
+    app: bankdb
   ports:
     - port: 80
       targetPort: 80
