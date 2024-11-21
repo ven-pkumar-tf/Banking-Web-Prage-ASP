@@ -29,3 +29,6 @@ Banking-Web-Prage-ASP/
 | - server-db.yml
 | - bankapp.yml
 | - init.sql
+
+
+docker run -d --name bankdb -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=NewPassword1234" -p 1433:1433 mcr.microsoft.com/mssql/server

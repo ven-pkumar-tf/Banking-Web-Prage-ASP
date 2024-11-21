@@ -18,8 +18,10 @@ spec:
         ports:
         - containerPort: 80
         env:
-        - name: ConnectionStrings__DevConnection
-          value: "Server=sql-server-service,1433;Database=TransactionDB;User Id=Pasupathikumar;Password=NewPassword1234;MultipleActiveResultSets=True;"
+        - name: ACCEPT_EULA
+          value: "Y"
+        - name: SA_PASSWORD
+          value: "NewPassword1234"
 ---
 apiVersion: v1
 kind: Service
