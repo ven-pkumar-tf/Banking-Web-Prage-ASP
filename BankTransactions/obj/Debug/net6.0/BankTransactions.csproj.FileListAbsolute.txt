@@ -827,3 +827,4 @@ C:\Users\PasupathiKumarS\Downloads\Banking-Web-Prage-ASP\BankTransactions\obj\De
 C:\Users\PasupathiKumarS\Downloads\Banking-Web-Prage-ASP\BankTransactions\obj\Debug\net6.0\BankTransactions.pdb
 C:\Users\PasupathiKumarS\Downloads\Banking-Web-Prage-ASP\BankTransactions\obj\Debug\net6.0\BankTransactions.genruntimeconfig.cache
 C:\Users\PasupathiKumarS\Downloads\Banking-Web-Prage-ASP\BankTransactions\obj\Debug\net6.0\ref\BankTransactions.dll
+C:\Users\PasupathiKumarS\Downloads\Banking-Web-Prage-ASP\BankTransactions\bin\Debug\net6.0\Microsoft.EntityFrameworkCore.Design.dll
