@@ -13,28 +13,29 @@ spec:
         app: sql-server
     spec:
       containers:
-      - name: sql-server-container
-        image: akscr01sample.azurecr.io/bankdb:latest
-        ports:
-        - containerPort: 1433  # Exposing SQL Server port
-        env:
-        - name: ACCEPT_EULA
-          value: "Y"  # Accept EULA for SQL Server
-        - name: MSSQL_SA_PASSWORD
-          value: "NewPassword1234"  # SA Password
-        - name: MSSQL_PID
-          value: "Express"  # Use Express edition of SQL Server
-        volumeMounts:
-        - name: sql-data
-          mountPath: /var/opt/mssql  # Path to store the database files
-        securityContext:
-          runAsUser: 10001  # Ensuring that the container runs as the 'mssql' user (UID 10001)
-          fsGroup: 10001  
+        - name: sql-server-container
+          image: akscr01sample.azurecr.io/bankdb:latest
+          ports:
+            - containerPort: 1433
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_SA_PASSWORD
+              value: "NewPassword1234"
+            - name: MSSQL_PID
+              value: "Express"
+          volumeMounts:
+            - name: sql-data
+              mountPath: /var/opt/mssql
+          securityContext:
+            runAsUser: 10001  # Run container as the mssql user
+            fsGroup: 10001    # Apply the same fsGroup for file system permissions
+
       volumes:
-      - name: sql-data
-        persistentVolumeClaim:
-          claimName: sql-server-pvc  # Persistent volume claim to store database data
-      
+        - name: sql-data
+          persistentVolumeClaim:
+            claimName: sql-server-pvc
+
 ---
 apiVersion: v1
 kind: Service
@@ -45,5 +46,5 @@ spec:
     app: sql-server
   ports:
     - port: 1433
-      targetPort: 1433  # Mapping to the SQL Server container port
-  type: LoadBalancer  # Exposing SQL Server externally via LoadBalancer
+      targetPort: 1433
+  type: LoadBalancer
