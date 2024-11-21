@@ -44,37 +44,40 @@ sudo chmod +x /usr/local/bin/docker-compose
 
 Steps to deploy the project:
 
-1. Docker image build and push
+1. Docker image build
 
-git clone https://github.com/pasupathi-azure-devops-c2s/social-media-project.git
+git clone https://github.com/pasupathi-azure-devops-c2s/Banking-Web-Prage-ASP.git
     
-cd client && docker build -t client:latest . && cd .. && cd server && docker build -t server:latest . && cd .. && cd socket && docker build -t socket:latest . && cd ..
+cd BankTransactions 
 
-docker-compose up --build
-    
-az login
-    
+docker build -t bankapp:latest .
+
+cd ..
+
+docker build -t bankdb:latest .
+
+2. Docker image push
+
+az login 
+
 az acr login --name akscr01sample
 
-docker tag client:latest akscr01sample.azurecr.io/client:latest
-docker tag socket:latest akscr01sample.azurecr.io/socket:latest
-docker tag server:latest akscr01sample.azurecr.io/server:latest
+docker tag bankapp:latest akscr01sample.azurecr.io/bankapp:latest
 
-docker push akscr01sample.azurecr.io/client:latest && docker push akscr01sample.azurecr.io/server:latest && docker push akscr01sample.azurecr.io/socket:latest
+docker tag bankdb:latest akscr01sample.azurecr.io/bankdb:latest
 
-    
+docker push akscr01sample.azurecr.io/bankapp:latest
 
-
-2. Deploy to the aks cluster
-
-az aks get-credentials --resource-group AKS-Cluster-RG --name aks-cluster-pasupathikumar
-kubectl apply -f client-deployment.yml --validate=false
-kubectl apply -f server-deployment.yml --validate=false
-kubectl apply -f socket-deployment.yml --validate=false
+docker push akscr01sample.azurecr.io/bankdb:latest
 
 
-docker rmi -f $(docker images -q)
+3. Deploy the project to kubernetes
 
-docker system prune -af
+az aks get-credentials --resource-group AKS-Cluster-RG --name pasupathikumar-aks-cluster
 
-sample-edits
+kubectl apply -f server-secret.yml
+
+kubectl apply -f server-db.yml
+
+kubectl apply -f bankapp.yml
+
