@@ -79,7 +79,7 @@ az aks get-credentials --resource-group AKS-Cluster-RG --name aks-cluster-pasupa
 
 kubectl create secret docker-registry acr-secret --docker-server=aksacr01sample.azurecr.io --docker-username=Pasupathikumar --docker-password=NewPassword1234 --docker-email=kumarmarimuthu99@gmail.com
 
-kubectl apply -f server-secret.yml
+kubectl apply -f pvc.yml
 
 kubectl apply -f server-db.yml
 
