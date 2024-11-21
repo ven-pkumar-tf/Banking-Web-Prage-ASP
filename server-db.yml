@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: sql-server-container
-        image: akscr01sample.azurecr.io/bankdb:latest 
+        image: akscr01sample.azurecr.io/bankdb:latest  # Replace with your image name if different
         ports:
         - containerPort: 1433  # Exposing SQL Server port
         env:
@@ -27,6 +27,13 @@ spec:
         volumeMounts:
         - name: sql-data
           mountPath: /var/opt/mssql
+        readinessProbe:
+          httpGet:
+            path: /health  # You can also use a TCP check on port 1433 if you prefer
+            port: 1433
+          initialDelaySeconds: 30
+          periodSeconds: 10
+
   volumes:
   - name: sql-data
     persistentVolumeClaim:
@@ -43,4 +50,4 @@ spec:
   ports:
     - port: 1433
       targetPort: 1433  # Mapping to the SQL Server container port
-  type: LoadBalancer  # ClusterIP makes it available internally within the cluster
+  type: ClusterIP  # ClusterIP makes it available internally within the cluster
