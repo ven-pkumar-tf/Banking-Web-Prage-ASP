@@ -81,3 +81,4 @@ kubectl apply -f server-db.yml
 
 kubectl apply -f bankapp.yml
 
+docker system prune -af
