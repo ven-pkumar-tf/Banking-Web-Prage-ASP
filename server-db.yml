@@ -50,4 +50,4 @@ spec:
   ports:
     - port: 1433
       targetPort: 1433  # Mapping to the SQL Server container port
-  type: ClusterIP  # ClusterIP makes it available internally within the cluster
+  type: LoadBalancer  # ClusterIP makes it available internally within the cluster
