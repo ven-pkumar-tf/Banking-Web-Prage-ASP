@@ -19,7 +19,7 @@ spec:
         - containerPort: 80
         env:
         - name: ConnectionStrings__DevConnection
-          value: "Server=sql-server-service,1433;Database=TransactionDB;User Id=Pasupathikumar;Password=NewPassword1234;Trusted_Connection=True;MultipleActiveResultSets=True;"
+          value: "Server=sql-server-service,1433;Database=TransactionDB;User Id=Pasupathikumar;Password=NewPassword1234;MultipleActiveResultSets=True;"
 ---
 apiVersion: v1
 kind: Service
