@@ -48,13 +48,11 @@ Steps to deploy the project:
 
 git clone https://github.com/pasupathi-azure-devops-c2s/Banking-Web-Prage-ASP.git
     
+docker build -t bankdb:latest .
+
 cd BankTransactions 
 
 docker build -t bankapp:latest .
-
-cd ..
-
-docker build -t bankdb:latest .
 
 2. Docker image push
 
