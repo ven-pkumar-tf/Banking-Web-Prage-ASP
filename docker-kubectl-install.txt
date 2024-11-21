@@ -73,7 +73,7 @@ docker push akscr01sample.azurecr.io/bankdb:latest
 
 3. Deploy the project to kubernetes
 
-az aks get-credentials --resource-group AKS-Cluster-RG --name pasupathikumar-aks-cluster
+az aks get-credentials --resource-group AKS-Cluster-RG --name aks-cluster-pasupathikumar
 
 kubectl apply -f server-secret.yml
 
