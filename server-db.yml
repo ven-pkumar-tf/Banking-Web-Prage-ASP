@@ -27,10 +27,14 @@ spec:
         volumeMounts:
         - name: sql-data
           mountPath: /var/opt/mssql  # Path to store the database files
+        securityContext:
+          runAsUser: 10001  # Ensuring that the container runs as the 'mssql' user (UID 10001)
+          fsGroup: 10001  
       volumes:
       - name: sql-data
         persistentVolumeClaim:
           claimName: sql-server-pvc  # Persistent volume claim to store database data
+      
 ---
 apiVersion: v1
 kind: Service
