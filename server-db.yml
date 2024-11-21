@@ -13,25 +13,25 @@ spec:
         app: sql-server
     spec:
       containers:
-      - name: sql-server-container
-        image: akscr01sample.azurecr.io/bankdb:latest  # Replace with your image name if different
-        ports:
-        - containerPort: 1433  # Exposing SQL Server port
+      - name: sql-server
+        image: mcr.microsoft.com/mssql/server:2019-latest
         env:
         - name: ACCEPT_EULA
-          value: "Y"  # Accept EULA for SQL Server
-        - name: MSSQL_SA_PASSWORD
-          value: "NewPassword1234"  # SA Password
-        - name: MSSQL_PID
-          value: "Express"  # Use Express edition of SQL Server
+          value: "Y"
+        - name: SA_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: sql-server-secret
+              key: SA_PASSWORD
+        ports:
+        - containerPort: 1433
         volumeMounts:
-        - name: sql-data
+        - name: sql-server-data
           mountPath: /var/opt/mssql
-  volumes:
-  - name: sql-data
-    persistentVolumeClaim:
-      claimName: sql-server-pvc  # Persistent volume claim to store database data
-
+      volumes:
+      - name: sql-server-data
+        persistentVolumeClaim:
+          claimName: sql-server-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -39,8 +39,8 @@ metadata:
   name: sql-server-service
 spec:
   selector:
-    app: sql-server  # This selector should match the app label of the SQL Server pod
+    app: sql-server
   ports:
     - port: 1433
-      targetPort: 1433  # Mapping to the SQL Server container port
-  type: ClusterIP  # ClusterIP makes it available internally within the cluster
+      targetPort: 1433
+  type: ClusterIP
