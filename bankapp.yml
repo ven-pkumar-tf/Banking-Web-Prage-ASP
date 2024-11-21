@@ -16,7 +16,7 @@ spec:
       - name: banking-web-app
         image: akscr01smaple.azurecr.io/bankapp:latest
         ports:
-        - containerPort: 80
+        - containerPort: 5171
         env:
         - name: ConnectionStrings__DevConnection
           value: "Server=sql-server-service,1433;Database=TransactionDB;User Id=Pasupathikumar;Password=NewPassword1234;"
@@ -33,5 +33,5 @@ spec:
     app: banking-web-app
   ports:
     - port: 80
-      targetPort: 80
+      targetPort: 5171
   type: LoadBalancer
