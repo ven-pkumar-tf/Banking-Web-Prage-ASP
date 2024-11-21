@@ -22,7 +22,6 @@ spec:
           value: "Server=sql-server-service,1433;Database=TransactionDB;User Id=Pasupathikumar;Password=NewPassword1234;"
       imagePullSecrets:
         - name: acr-secret
-      
 ---
 apiVersion: v1
 kind: Service
