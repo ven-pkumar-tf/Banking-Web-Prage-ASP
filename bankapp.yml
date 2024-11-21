@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: banking-web-app
-        image: akscr01smaple.azurecr.io/bankapp:latest
+        image: akscr01sample.azurecr.io/bankapp:latest
         ports:
         - containerPort: 5171
         env:

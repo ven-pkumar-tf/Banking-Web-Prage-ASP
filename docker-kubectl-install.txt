@@ -56,11 +56,11 @@ docker build -t bankapp:latest .
 
 2. Docker image push
 
+az login #Based on the requirement. 
+
 docker tag bankapp:latest akscr01sample.azurecr.io/bankapp:latest
 
 docker tag bankdb:latest akscr01sample.azurecr.io/bankdb:latest
-
-az login #Based on the requirement. 
 
 az acr login --name akscr01sample
 
@@ -81,4 +81,10 @@ kubectl apply -f server-db.yml
 
 kubectl apply -f bankapp.yml
 
+4. Delete the docker images and kubernetes credentials
+
 docker system prune -af
+
+kubectl config get-contexts
+
+kubectl config delete-context aks-cluster-pasupathikumar
