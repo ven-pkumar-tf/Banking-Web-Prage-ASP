@@ -54,6 +54,8 @@ cd BankTransactions
 
 docker build -t bankapp:latest .
 
+cd ..
+
 2. Docker image push
 
 az login #Based on the requirement. 

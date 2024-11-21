@@ -18,6 +18,8 @@ spec:
         ports:
         - containerPort: 5171
         env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development" 
         - name: ConnectionStrings__DevConnection
           value: "Server=sql-server-service,1433;Database=TransactionDB;User Id=Pasupathikumar;Password=NewPassword1234;"
       imagePullSecrets:
