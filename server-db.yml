@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: sql-server-container
-        image: akscr01sample.azurecr.io/bankdb:latest  # Replace with your image name if different
+        image: akscr01sample.azurecr.io/bankdb:latest
         ports:
         - containerPort: 1433  # Exposing SQL Server port
         env:
@@ -26,19 +26,11 @@ spec:
           value: "Express"  # Use Express edition of SQL Server
         volumeMounts:
         - name: sql-data
-          mountPath: /var/opt/mssql
-        readinessProbe:
-          httpGet:
-            path: /health  # You can also use a TCP check on port 1433 if you prefer
-            port: 1433
-          initialDelaySeconds: 30
-          periodSeconds: 10
-
-  volumes:
-  - name: sql-data
-    persistentVolumeClaim:
-      claimName: sql-server-pvc  # Persistent volume claim to store database data
-
+          mountPath: /var/opt/mssql  # Path to store the database files
+      volumes:
+      - name: sql-data
+        persistentVolumeClaim:
+          claimName: sql-server-pvc  # Persistent volume claim to store database data
 ---
 apiVersion: v1
 kind: Service
@@ -46,8 +38,8 @@ metadata:
   name: sql-server-service
 spec:
   selector:
-    app: sql-server  # This selector should match the app label of the SQL Server pod
+    app: sql-server
   ports:
     - port: 1433
       targetPort: 1433  # Mapping to the SQL Server container port
-  type: LoadBalancer  # ClusterIP makes it available internally within the cluster
+  type: LoadBalancer  # Exposing SQL Server externally via LoadBalancer
