@@ -13,6 +13,8 @@ RUN dotnet publish -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS runtime
 
+ENV ASPNETCORE_URLS=http://+:5171
+
 WORKDIR /app
 
 COPY --from=build /app/publish ./

@@ -19,8 +19,13 @@ Banking-Web-Prage-ASP/
 │   ├── wwwroot/                   
 │   ├── BankTransactions.csproj    
 │   ├── BankTransactions.sln       
-│   ├── Dockerfile                 
+│   ├── Dockerfile    (for application)             
 │   ├── Program.cs                 
 │   └── .editorconfig              
 ├── .github/                       
 ├── README.md                      
+| - Dockerfile (for db)
+| - server-secret.yml
+| - server-db.yml
+| - bankapp.yml
+| - init.sql

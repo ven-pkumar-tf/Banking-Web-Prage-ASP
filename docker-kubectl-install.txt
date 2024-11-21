@@ -56,13 +56,13 @@ docker build -t bankapp:latest .
 
 2. Docker image push
 
-az login 
-
-az acr login --name akscr01sample
-
 docker tag bankapp:latest akscr01sample.azurecr.io/bankapp:latest
 
 docker tag bankdb:latest akscr01sample.azurecr.io/bankdb:latest
+
+az login #Based on the requirement. 
+
+az acr login --name akscr01sample
 
 docker push akscr01sample.azurecr.io/bankapp:latest
 
