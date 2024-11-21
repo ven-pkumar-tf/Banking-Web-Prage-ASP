@@ -14,6 +14,8 @@ RUN dotnet publish -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS runtime
 
 ENV ASPNETCORE_URLS=http://+:5171
+ENV ASPNETCORE_ENVIRONMENT=Development
+
 
 WORKDIR /app
 
