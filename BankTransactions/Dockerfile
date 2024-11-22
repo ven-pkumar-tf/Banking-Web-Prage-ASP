@@ -1,20 +1,29 @@
+# Use the official .NET 6.0 SDK as a base image
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 
+# Set the working directory inside the container
 WORKDIR /app
 
-COPY *.csproj ./
-
-RUN dotnet restore
-
-RUN dotnet tool install --global dotnet-ef --version 6.0.0
-
+# Copy the entire project directory to the container
 COPY . ./
 
+# Set the working directory to the subfolder containing the .csproj file
+WORKDIR /app/BankTransactions
+
+# Restore dependencies
+RUN dotnet restore
+
+# Install the EF Core CLI tools
+RUN dotnet tool install --global dotnet-ef --version 6.0.0
+
+# Apply the EF Core migrations
 RUN dotnet ef database update
 
+# Publish the application
+RUN dotnet publish -c Release -o /app/out
 
-RUN dotnet build 
-
+# Expose the application port (optional, depending on your app)
 EXPOSE 5171
 
-ENTRYPOINT [ "dotnet", "run" ]
+# Run the application
+ENTRYPOINT ["dotnet", "/app/out/BankTransactions.dll"]
