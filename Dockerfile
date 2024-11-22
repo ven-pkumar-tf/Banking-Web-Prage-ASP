@@ -24,7 +24,7 @@ ENV PATH="$PATH:/root/.dotnet/tools"
 RUN dotnet publish -c Release -o /app/out
 
 # Expose the application port (optional, depending on your app)
-EXPOSE 80
+EXPOSE 5171
 
 # Run the application
 ENTRYPOINT ["dotnet", "/app/out/BankTransactions.dll"]
