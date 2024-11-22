@@ -6,6 +6,8 @@ COPY *.csproj ./
 
 RUN dotnet restore
 
+RUN dotnet tool install --global dotnet-ef
+
 COPY . ./
 
 RUN dotnet ef database update
