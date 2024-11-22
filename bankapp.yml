@@ -20,10 +20,9 @@ spec:
         env:
         - name: ASPNETCORE_URLS
           value: "http://+:5171"
-        - name: ASPNETCORE_ENVIRONMENT
-          value: "Development" 
+    
         - name: ConnectionStrings__DevConnection
-          value: "Server=4.156.111.120,1433;Database=TransactionDB;User Id=sa;Password=NewPassword1234;"
+          value: "Server=tcp:sqldbserver819.database.windows.net,1433;Initial Catalog=ASP_NET_Database;Persist Security Info=False;User ID=Pasupathikumar;Password=NewPassword1234;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
       imagePullSecrets:
         - name: acr-secret
 ---
