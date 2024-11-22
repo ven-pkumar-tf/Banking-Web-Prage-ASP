@@ -8,8 +8,7 @@ WORKDIR /app
 COPY . ./
 
 # Set the working directory to the subfolder containing the .csproj file
-WORKDIR /app/BankTransactions
-
+WORKDIR /
 # Restore dependencies
 RUN dotnet restore
 
@@ -26,4 +25,4 @@ RUN dotnet publish -c Release -o /app/out
 EXPOSE 5171
 
 # Run the application
-ENTRYPOINT ["dotnet", "/app/out/BankTransactions.dll"]
+ENTRYPOINT ["dotnet", "BankTransactions.dll"]
