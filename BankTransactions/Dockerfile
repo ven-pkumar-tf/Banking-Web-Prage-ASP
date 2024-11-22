@@ -6,7 +6,7 @@ COPY *.csproj ./
 
 RUN dotnet restore
 
-RUN dotnet tool install --global dotnet-ef
+RUN dotnet tool install --global dotnet-ef --version 6.0.0
 
 COPY . ./
 
