@@ -14,7 +14,7 @@ WORKDIR /app/BankTransactions
 RUN dotnet restore
 
 # Install the EF Core CLI tools globally
-RUN dotnet tool install --global dotnet-ef --version 6.0.0
+RUN dotnet tool install --global dotnet-ef --version 6.0.2
 
 # Add the dotnet tools directory to the PATH
 ENV PATH="$PATH:/root/.dotnet/tools"
