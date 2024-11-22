@@ -10,11 +10,11 @@ COPY . ./
 # Set the working directory to the subfolder containing the .csproj file
 WORKDIR /app/BankTransactions
 
-# Restore dependencies
+# Restore dependencies (including tools)
 RUN dotnet restore
 
-# Install the EF Core CLI tools
-RUN dotnet tool install --global dotnet-ef --version 6.0.0
+# Install the EF Core CLI tools as a local tool for the project
+RUN dotnet tool restore
 
 # Apply the EF Core migrations
 RUN dotnet ef database update
