@@ -19,8 +19,6 @@ RUN dotnet tool install --global dotnet-ef --version 6.0.0
 # Add the dotnet tools directory to the PATH
 ENV PATH="$PATH:/root/.dotnet/tools"
 
-# Apply the EF Core migrations
-RUN dotnet ef database update
 
 # Publish the application
 RUN dotnet publish -c Release -o /app/out
