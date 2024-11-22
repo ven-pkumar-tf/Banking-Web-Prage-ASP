@@ -2,27 +2,17 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 
 WORKDIR /app
 
-COPY BankTransactions.csproj ./
+COPY *.csproj ./
+
 RUN dotnet restore
 
-COPY . .
+COPY . ./
 
-RUN dotnet build -c Release -o /app/build
-
-RUN dotnet publish -c Release -o /app/publish
-
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS runtime
-
-ENV ASPNETCORE_URLS=http://+:5171
-ENV ASPNETCORE_ENVIRONMENT=Development
+RUN dotnet ef database update
 
 
-WORKDIR /app
-
-COPY --from=build /app/publish ./
-
+RUN dotnet build 
 
 EXPOSE 5171
 
-# Start the application
-ENTRYPOINT ["dotnet", "BankTransactions.dll"]
+ENTRYPOINT [ "dotnet", "run" ]

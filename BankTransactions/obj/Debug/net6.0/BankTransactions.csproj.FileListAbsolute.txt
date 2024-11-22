@@ -820,7 +820,6 @@ C:\Users\PasupathiKumarS\Downloads\Banking-Web-Prage-ASP\BankTransactions\obj\De
 C:\Users\PasupathiKumarS\Downloads\Banking-Web-Prage-ASP\BankTransactions\obj\Debug\net6.0\staticwebassets\msbuild.buildMultiTargeting.BankTransactions.props
 C:\Users\PasupathiKumarS\Downloads\Banking-Web-Prage-ASP\BankTransactions\obj\Debug\net6.0\staticwebassets\msbuild.buildTransitive.BankTransactions.props
 C:\Users\PasupathiKumarS\Downloads\Banking-Web-Prage-ASP\BankTransactions\obj\Debug\net6.0\staticwebassets.pack.json
-C:\Users\PasupathiKumarS\Downloads\Banking-Web-Prage-ASP\BankTransactions\obj\Debug\net6.0\staticwebassets.upToDateCheck.txt
 C:\Users\PasupathiKumarS\Downloads\Banking-Web-Prage-ASP\BankTransactions\obj\Debug\net6.0\BankTran.7DD16C7A.Up2Date
 C:\Users\PasupathiKumarS\Downloads\Banking-Web-Prage-ASP\BankTransactions\obj\Debug\net6.0\BankTransactions.dll
 C:\Users\PasupathiKumarS\Downloads\Banking-Web-Prage-ASP\BankTransactions\obj\Debug\net6.0\refint\BankTransactions.dll
