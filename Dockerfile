@@ -13,11 +13,7 @@ WORKDIR /app/BankTransactions
 # Restore dependencies (including tools)
 RUN dotnet restore
 
-# Install the EF Core CLI tools as a local tool for the project
-RUN dotnet tool restore
 
-# Apply the EF Core migrations
-RUN dotnet ef database update
 
 # Publish the application
 RUN dotnet publish -c Release -o /app/out
