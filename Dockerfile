@@ -1,19 +1,29 @@
-# Use the official SQL Server image
-FROM mcr.microsoft.com/mssql/server:2019-latest
+# Use the official .NET 6.0 SDK as a base image
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 
-# Set the environment variable for the SA password
-ENV MSSQL_SA_PASSWORD=NewPassword1234
-ENV ACCEPT_EULA=Y
-ENV MSSQL_PID=Express
+# Set the working directory inside the container
+WORKDIR /app
 
-# Create a directory for the configuration files
-RUN mkdir -p /usr/config
+# Copy the project files into the container
+COPY . ./
 
-# Copy the initialization SQL script into the container
-COPY init.sql /usr/config/init.sql
+# Set the working directory to the subfolder containing the .csproj file
+WORKDIR /app/BankTransactions
 
-# Expose the default SQL Server port
-EXPOSE 1433
+# Restore dependencies
+RUN dotnet restore
 
-# Command to run SQL Server in the background
-CMD /opt/mssql/bin/sqlservr
+# Install the EF Core CLI tools
+RUN dotnet tool install --global dotnet-ef --version 6.0.0
+
+# Apply the EF Core migrations
+RUN dotnet ef database update
+
+# Publish the application
+RUN dotnet publish -c Release -o /app/out
+
+# Expose the application port (optional, depending on your app)
+EXPOSE 5171
+
+# Run the application
+ENTRYPOINT ["dotnet", "/app/out/BankTransactions.dll"]
