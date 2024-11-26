@@ -50,13 +50,10 @@ Steps to deploy the project:
 
 git clone https://github.com/pasupathi-azure-devops-c2s/Banking-Web-Prage-ASP.git
     
-docker build -t bankdb:latest .
-
-cd BankTransactions 
+cd Banking-Web-Prage-ASP
 
 docker build -t bankapp:latest .
 
-cd ..
 
 2. Docker image push
 
@@ -64,26 +61,19 @@ az login #Based on the requirement.
 
 docker tag bankapp:latest akscr01sample.azurecr.io/bankapp:latest
 
-docker tag bankdb:latest akscr01sample.azurecr.io/bankdb:latest
 
 az acr login --name akscr01sample
 
 docker push akscr01sample.azurecr.io/bankapp:latest
 
-docker push akscr01sample.azurecr.io/bankdb:latest
 
 
 3. Deploy the project to kubernetes
 
-az aks get-credentials --resource-group AKS-Cluster-RG --name aks-cluster-pasupathikumar --overwrite=true
+az aks get-credentials --resource-group AKS-Cluster-RG --name aks-cluster-pasupathikumar
 
 kubectl create secret docker-registry acr-secret --docker-server=aksacr01sample.azurecr.io --docker-username=Pasupathikumar --docker-password=NewPassword1234 --docker-email=kumarmarimuthu99@gmail.com
 
-kubectl apply -f pvc.yml
-
-kubectl apply -f server-secret.yml
-
-kubectl apply -f server-db.yml
 
 kubectl apply -f bankapp.yml
 
