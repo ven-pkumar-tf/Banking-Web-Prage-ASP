@@ -23,14 +23,6 @@ jobs:
       - name: "Checkout GitHub Action"
         uses: actions/checkout@v3
 
-      # If you want to use Azure RBAC instead of Publish Profile, then uncomment the task below
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          client-id: "d42b3bc0-c31c-49e4-bcd7-93285a4f4977"
-          tenant-id: "f5f02767-508e-4b78-bc05-2b16c8a081a1"
-          subscription-id: "8233b4b7-4613-4da6-ba10-1e92a784ff6d"
-          client-secret: "j-f8Q~R_M3AOMiJyK6SM9dBqXoWgdi9KTkRB8blf"
 
       - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
         uses: actions/setup-dotnet@v3
@@ -91,7 +83,7 @@ jobs:
         run: |
           if (Test-Path "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.ARTIFACT_FILE_NAME }}") {
             echo "${{ env.ARTIFACT_FILE_NAME }} - ZIP file ready to upload.."
-            az account show
+            az login --service-principal --username "d42b3bc0-c31c-49e4-bcd7-93285a4f4977" --password "j-f8Q~R_M3AOMiJyK6SM9dBqXoWgdi9KTkRB8blf" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1" --subscription "8233b4b7-4613-4da6-ba10-1e92a784ff6d"
             az storage blob upload --account-name terraform0sa2 --container-name edial-function-app --name dev/${{ env.ARTIFACT_FILE_NAME }} --file ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.ARTIFACT_FILE_NAME }} --overwrite true --auth-mode login
           } else {
             echo "${{ env.ARTIFACT_FILE_NAME }} - ZIP file not found."
