@@ -23,7 +23,10 @@ jobs:
       - name: "Checkout GitHub Action"
         uses: actions/checkout@v3
 
-
+      - name: AZ Login
+        run: |
+          az login --service-principal --username "d42b3bc0-c31c-49e4-bcd7-93285a4f4977" --password "j-f8Q~R_M3AOMiJyK6SM9dBqXoWgdi9KTkRB8blf" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1" --subscription "8233b4b7-4613-4da6-ba10-1e92a784ff6d"
+            
       - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
         uses: actions/setup-dotnet@v3
         with:
