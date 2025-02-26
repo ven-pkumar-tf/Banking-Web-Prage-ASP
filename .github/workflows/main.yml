@@ -17,7 +17,7 @@ jobs:
     env:
       #AZURE_FUNCTIONAPP_NAME: "tf-func-dev-edial-in-westus-0020" # set this to your function app
       AZURE_FUNCTIONAPP_NAME: "tf-func-dev-testing-20" # set this to your function app
-      AZURE_FUNCTIONAPP_PACKAGE_PATH: "BankingApplication" # set this to the path to your function app project, defaults to the repository root
+      AZURE_FUNCTIONAPP_PACKAGE_PATH: "BankTransactions" # set this to the path to your function app project, defaults to the repository root
       DOTNET_VERSION: "6.0.x" # set this to the dotnet version to use (e.g. '2.1.x', '3.1.x', '5.0.x')
     steps:
       - name: "Checkout GitHub Action"
@@ -30,6 +30,7 @@ jobs:
           client-id: "d42b3bc0-c31c-49e4-bcd7-93285a4f4977"
           tenant-id: "f5f02767-508e-4b78-bc05-2b16c8a081a1"
           subscription-id: "8233b4b7-4613-4da6-ba10-1e92a784ff6d"
+          client-secret: "j-f8Q~R_M3AOMiJyK6SM9dBqXoWgdi9KTkRB8blf"
 
       - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
         uses: actions/setup-dotnet@v3
