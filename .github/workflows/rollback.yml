@@ -1,0 +1,61 @@
+name: Edial Rollback
+on: 
+  workflow_dispatch:
+jobs:
+  dev-function-app-rollback:
+    runs-on: windows-latest
+    #environment: Development
+    env:
+      AZURE_FUNCTIONAPP_NAME: "tf-func-dev-testing-20"
+      AZURE_FUNCTIONAPP_PACKAGE_PATH: "BankTransactions"
+      DOTNET_VERSION: "6.0.x"
+      STORAGE_ACCOUNT: "terraform0sa2"
+      CONTAINER_NAME: "edial-function-app"
+
+    steps:
+      - name: "Azure Login"
+        run: |
+          az login --service-principal --username "d42b3bc0-c31c-49e4-bcd7-93285a4f4977" --password "j-f8Q~R_M3AOMiJyK6SM9dBqXoWgdi9KTkRB8blf" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
+      
+      - name: "Download Previous Artifact Number"
+        continue-on-error: true
+        run: |
+          mkdir -p artifact_download  # Ensure directory exists
+          az storage blob download --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --name dev-artifact-number/dev_artifact_number.txt --file artifact_download/dev_artifact_number.txt --overwrite true --auth-mode login
+        shell: pwsh
+
+      - name: "Download Last Successful Deployed Artifact File"
+        shell: bash
+        run: |
+          ARTIFACT_NUMBER=2
+          if (Test-Path "artifact_download/dev_artifact_number.txt" ); then
+            ARTIFACT_NUMBER=Get-Content "artifact_download/dev_artifact_number.txt"
+          fi
+
+          echo "Current Artifact Number: $ARTIFACT_NUMBER"
+          ARTIFACT_NUMBER=$((ARTIFACT_NUMBER - 1))
+          echo "ARTIFACT_NUMBER=$ARTIFACT_NUMBER" >> $GITHUB_ENV
+
+          ARTIFACT_FILE_NAME="output-${ARTIFACT_NUMBER}-"
+          echo "ARTIFACT_FILE=$ARTIFACT_FILE_NAME" >> $GITHUB_ENV
+
+          FILE_NAME_LIST=$(az storage blob list --account-name ${{ env.STORAGE_ACCOUNT }} --container-name edial-function-app-artifact-files --query "[?contains(@.name, '$ARTIFACT_FILE_NAME')].name" --output tsv)
+
+          for FILE_NAME in $FILE_NAME_LIST; do
+            echo "Downloading: $FILE_NAME"
+            az storage blob download --account-name ${{ env.STORAGE_ACCOUNT }} --container-name edial-function-app-artifact-files --name "$FILE_NAME" --file "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/$FILE_NAME" --auth-mode login
+            echo "FILE_NAME=$FILE_NAME" >> $GITHUB_ENV
+          done
+
+      - name: "Extract Artifact File"
+        if: env.FILE_NAME != ''
+        uses: hoatruongdev09/extract-zip-github-action@v1.2
+        with:
+          input-path: "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.FILE_NAME }}"
+          output-path: "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/dev-${{ env.FILE_NAME }}"
+
+      - name: "List Extracted Files (Debugging)"
+        run: |
+          echo "Extracted Files in: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/dev-${{ env.FILE_NAME }}"
+          ls -lh ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/dev-${{ env.FILE_NAME }}
+        shell: bash
