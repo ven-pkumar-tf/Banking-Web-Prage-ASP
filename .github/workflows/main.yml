@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - develop
- 
+
 permissions:
   id-token: write
   contents: read
@@ -17,13 +17,15 @@ jobs:
       AZURE_FUNCTIONAPP_NAME: "tf-func-dev-testing-20"
       AZURE_FUNCTIONAPP_PACKAGE_PATH: "BankTransactions"
       DOTNET_VERSION: "6.0.x"
+
     steps:
       - name: "Checkout GitHub Action"
         uses: actions/checkout@v3
 
       - name: "Azure Login"
         run: |
-           az login --service-principal --username "d42b3bc0-c31c-49e4-bcd7-93285a4f4977" --password "j-f8Q~R_M3AOMiJyK6SM9dBqXoWgdi9KTkRB8blf" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1" 
+          az login --service-principal --username "d42b3bc0-c31c-49e4-bcd7-93285a4f4977" --password "j-f8Q~R_M3AOMiJyK6SM9dBqXoWgdi9KTkRB8blf" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
+
       - name: "Setup DotNet ${{ env.DOTNET_VERSION }} Environment"
         uses: actions/setup-dotnet@v3
         with:
@@ -36,28 +38,31 @@ jobs:
           dotnet build --configuration Release --output ./output
           popd
 
-      - name: "Download Previous Artifact Number"
-        uses: actions/download-artifact@v4
-        with:
-          name: azure-function-app-artifact
-          path: artifact_download
-        continue-on-error: true
-
-      - name: "Generate Artifact ID"
+      - name: "Check for Existing Artifact File"
         run: |
-          if (Test-Path "artifact_download/dev_artifact_number.txt") {
-            $ARTIFACT_NUMBER = Get-Content "artifact_download/dev_artifact_number.txt"
-          } else {
-            $ARTIFACT_NUMBER = 0
-          }
+          $ARTIFACT_PATH="${{ github.workspace }}/artifact_download"
+          mkdir -p $ARTIFACT_PATH
           
-          $NEW_ARTIFACT_NUMBER = $ARTIFACT_NUMBER + 1
-          echo "ARTIFACT_NUMBER=$NEW_ARTIFACT_NUMBER" | Out-File -FilePath $Env:GITHUB_ENV -Append
+          # Check if previous artifact number exists
+          if (Test-Path "$ARTIFACT_PATH/dev_artifact_number.txt") {
+              $ARTIFACT_NUMBER = Get-Content "$ARTIFACT_PATH/dev_artifact_number.txt"
+              Write-Host "Previous Artifact Number Found: $ARTIFACT_NUMBER"
+          } else {
+              $ARTIFACT_NUMBER = 0
+              Write-Host "No previous artifact found. Starting from 0."
+          }
 
+          # Increment artifact number
+          $NEW_ARTIFACT_NUMBER = [int]$ARTIFACT_NUMBER + 1
+          echo "NEW_ARTIFACT_NUMBER=$NEW_ARTIFACT_NUMBER" | Out-File -FilePath $Env:GITHUB_ENV -Append
+        shell: pwsh
+
+      - name: "Generate New Artifact ID"
+        run: |
           $DEPLOYED_TIME = (Get-Date).ToString("ddMMyyyy-HHmmss")
           echo "DEPLOYED_TIME=$DEPLOYED_TIME" | Out-File -FilePath $Env:GITHUB_ENV -Append
 
-          $ARTIFACT_ID = "$NEW_ARTIFACT_NUMBER-$DEPLOYED_TIME"
+          $ARTIFACT_ID = "${{ env.NEW_ARTIFACT_NUMBER }}-$DEPLOYED_TIME"
           echo "ARTIFACT_ID=$ARTIFACT_ID" | Out-File -FilePath $Env:GITHUB_ENV -Append
 
           $ARTIFACT_FILE_NAME = "output-$ARTIFACT_ID.zip"
@@ -69,39 +74,20 @@ jobs:
           Compress-Archive -Path "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output/*" -DestinationPath "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.ARTIFACT_FILE }}" -Force
         shell: pwsh
 
-      - name: "Fix Permissions (Windows)"
-        run: |
-          icacls BankTransactions /grant Everyone:F /T /C /Q
-        shell: pwsh
-
-      - name: "Upload the artifact file to storage blob container"
+      - name: "Upload to Azure Blob Storage"
         run: |
           if (Test-Path "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.ARTIFACT_FILE }}") {
-            echo "${{ env.ARTIFACT_FILE }} - ZIP file ready to upload.."
+            echo "Uploading ${{ env.ARTIFACT_FILE }}..."
             az storage blob upload --account-name terraform0sa2 --container-name edial-function-app --name dev/${{ env.ARTIFACT_FILE }} --file ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.ARTIFACT_FILE }} --overwrite true --auth-mode login
           } else {
-            echo "${{ env.ARTIFACT_FILE }} - ZIP file not found."
+            echo "ZIP file not found!"
           }
         shell: pwsh
 
-      - name: "Update the Artifact file number"
+      - name: "Update Artifact Number Locally"
         run: |
-          $ARTIFACT_PATH = "${{ github.workspace }}/artifact_download"
-          Write-Host "Checking if the directory exists: $ARTIFACT_PATH"
-
-          # Ensure the directory exists before writing the file
-          if (!(Test-Path $ARTIFACT_PATH)) {
-              New-Item -ItemType Directory -Path $ARTIFACT_PATH -Force
-              Write-Host "Created directory: $ARTIFACT_PATH"
-          } else {
-              Write-Host "Directory already exists: $ARTIFACT_PATH"
-          }
-
-          $NEW_ARTIFACT_NUMBER = $env:ARTIFACT_NUMBER
-          Set-Content -Path "$ARTIFACT_PATH/dev_artifact_number.txt" -Value $NEW_ARTIFACT_NUMBER
-          Write-Host "Updated dev_artifact_number.txt with Artifact Number: $NEW_ARTIFACT_NUMBER"
+          echo "${{ env.NEW_ARTIFACT_NUMBER }}" | Out-File -FilePath "${{ github.workspace }}/artifact_download/dev_artifact_number.txt"
         shell: pwsh
-
 
       - name: "Upload Updated Artifact Number"
         uses: actions/upload-artifact@v4
