@@ -128,6 +128,7 @@ jobs:
       - name: "Update Artifact Number Locally"
         run: |
           echo "${{ env.NEW_ARTIFACT_NUMBER }}" | Out-File -FilePath "${{ github.workspace }}/artifact_download/dev_artifact_number.txt"
+          az storage blob upload --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --name dev-artifact-number/dev_artifact_number.txt --file dev_artifact_number.txt --overwrite true --auth-mode login
         shell: pwsh
 
       - name: "Upload Updated Artifact Number"
