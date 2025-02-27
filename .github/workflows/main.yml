@@ -38,15 +38,25 @@ jobs:
           dotnet build --configuration Release --output ./output
           popd
 
-      - name: "Check for Existing Artifact File"
+      - name: Download Previous Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: azure-function-app-artifact
+          path: artifact_download
+        continue-on-error: true
+
+      - name: "Check for Existing Artifact File and Delete Old One"
         run: |
-          $ARTIFACT_PATH="${{ github.workspace }}/artifact_download"
-          mkdir -p $ARTIFACT_PATH
+          $ARTIFACT_PATH="$Env:GITHUB_WORKSPACE\artifact_download"
+          New-Item -ItemType Directory -Force -Path $ARTIFACT_PATH | Out-Null
           
           # Check if previous artifact number exists
-          if (Test-Path "$ARTIFACT_PATH/dev_artifact_number.txt") {
-              $ARTIFACT_NUMBER = Get-Content "$ARTIFACT_PATH/dev_artifact_number.txt"
+          if (Test-Path "$ARTIFACT_PATH\dev_artifact_number.txt") {
+              $ARTIFACT_NUMBER = Get-Content "$ARTIFACT_PATH\dev_artifact_number.txt"
               Write-Host "Previous Artifact Number Found: $ARTIFACT_NUMBER"
+              
+              # Delete old artifact
+              Remove-Item "$ARTIFACT_PATH\dev_artifact_number.txt" -Force
           } else {
               $ARTIFACT_NUMBER = 0
               Write-Host "No previous artifact found. Starting from 0."
@@ -77,16 +87,16 @@ jobs:
       - name: "Upload to Azure Blob Storage"
         run: |
           if (Test-Path "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.ARTIFACT_FILE }}") {
-            echo "Uploading ${{ env.ARTIFACT_FILE }}..."
+            Write-Host "Uploading ${{ env.ARTIFACT_FILE }}..."
             az storage blob upload --account-name terraform0sa2 --container-name edial-function-app --name dev/${{ env.ARTIFACT_FILE }} --file ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.ARTIFACT_FILE }} --overwrite true --auth-mode login
           } else {
-            echo "ZIP file not found!"
+            Write-Host "ZIP file not found!"
           }
         shell: pwsh
 
       - name: "Update Artifact Number Locally"
         run: |
-          echo "${{ env.NEW_ARTIFACT_NUMBER }}" | Out-File -FilePath "${{ github.workspace }}/artifact_download/dev_artifact_number.txt"
+          echo "${{ env.NEW_ARTIFACT_NUMBER }}" | Out-File -FilePath "$Env:GITHUB_WORKSPACE\artifact_download\dev_artifact_number.txt"
         shell: pwsh
 
       - name: "Upload Updated Artifact Number"
