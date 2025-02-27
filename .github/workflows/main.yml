@@ -41,8 +41,8 @@ jobs:
       - name: "Download Previous Artifact Number"
         uses: actions/download-artifact@v4.1.9
         with:
-          name: ${{ Env:GITHUB_WORKSPACE }}
-          path: artifact_download
+          name: azure-function-app-artifact
+          path: artifact_download/dev_artifact_number.txt
         continue-on-error: true
 
       - name: "Check for Existing Artifact File and Delete Old One"
