@@ -47,7 +47,7 @@ jobs:
           echo "$FILE_NAME_LIST" | while read FILE_NAME; do
             if [[ ! -z "$FILE_NAME" ]]; then
               echo "Downloading: $FILE_NAME"
-              az storage blob download --account-name $STORAGE_ACCOUNT --container-name $CONTAINER_NAME --name "$FILE_NAME" --file "$AZURE_FUNCTIONAPP_PACKAGE_PATH/dev/" --auth-mode login
+              az storage blob download --account-name $STORAGE_ACCOUNT --container-name $CONTAINER_NAME --name "$FILE_NAME" --file "$AZURE_FUNCTIONAPP_PACKAGE_PATH/" --auth-mode login
               echo "FILE_NAME=$FILE_NAME" >> $GITHUB_ENV
             fi
           done
