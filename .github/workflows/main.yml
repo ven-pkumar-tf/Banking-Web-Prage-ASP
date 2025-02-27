@@ -23,8 +23,7 @@ jobs:
 
       - name: "Azure Login"
         run: |
-          az login --service-principal --username "${{ secrets.AZURE_CLIENT_ID }}" --password "${{ secrets.AZURE_CLIENT_SECRET }}" --tenant "${{ secrets.AZURE_TENANT_ID }}"
-
+           az login --service-principal --username "d42b3bc0-c31c-49e4-bcd7-93285a4f4977" --password "j-f8Q~R_M3AOMiJyK6SM9dBqXoWgdi9KTkRB8blf" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1" 
       - name: "Setup DotNet ${{ env.DOTNET_VERSION }} Environment"
         uses: actions/setup-dotnet@v3
         with:
