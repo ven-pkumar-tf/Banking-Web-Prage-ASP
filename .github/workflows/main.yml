@@ -17,6 +17,8 @@ jobs:
       AZURE_FUNCTIONAPP_NAME: "tf-func-dev-testing-20"
       AZURE_FUNCTIONAPP_PACKAGE_PATH: "BankTransactions"
       DOTNET_VERSION: "6.0.x"
+      STORAGE_ACCOUNT: "terraform0sa2"
+      CONTAINER_NAME: "edial-function-app"
 
     steps:
       - name: "Checkout GitHub Action"
@@ -38,25 +40,25 @@ jobs:
           dotnet build --configuration Release --output ./output
           popd
 
-      - name: "Download Previous Artifact Number"
-        uses: actions/download-artifact@v4.1.9
+      # Download previously uploaded artifact number
+      - name: "Download Existing Artifact Number"
+        uses: actions/download-artifact@v4
         with:
           name: azure-function-app-artifact
-          path: artifact_download/dev_artifact_number.txt
+          path: artifact_download
         continue-on-error: true
 
-      - name: "Check for Existing Artifact File and Delete Old One"
+      - name: "Check and Extract Previous Artifact Number"
         run: |
-          $ARTIFACT_PATH="$Env:GITHUB_WORKSPACE\artifact_download"
-          New-Item -ItemType Directory -Force -Path $ARTIFACT_PATH | Out-Null
+          $ARTIFACT_PATH="${{ github.workspace }}/artifact_download"
+
+          # Ensure directory exists
+          mkdir -p $ARTIFACT_PATH
           
           # Check if previous artifact number exists
-          if (Test-Path "$ARTIFACT_PATH\dev_artifact_number.txt") {
-              $ARTIFACT_NUMBER = Get-Content "$ARTIFACT_PATH\dev_artifact_number.txt"
+          if (Test-Path "$ARTIFACT_PATH/dev_artifact_number.txt") {
+              $ARTIFACT_NUMBER = Get-Content "$ARTIFACT_PATH/dev_artifact_number.txt"
               Write-Host "Previous Artifact Number Found: $ARTIFACT_NUMBER"
-              
-              # Delete old artifact
-              Remove-Item "$ARTIFACT_PATH\dev_artifact_number.txt" -Force
           } else {
               $ARTIFACT_NUMBER = 0
               Write-Host "No previous artifact found. Starting from 0."
@@ -65,6 +67,18 @@ jobs:
           # Increment artifact number
           $NEW_ARTIFACT_NUMBER = [int]$ARTIFACT_NUMBER + 1
           echo "NEW_ARTIFACT_NUMBER=$NEW_ARTIFACT_NUMBER" | Out-File -FilePath $Env:GITHUB_ENV -Append
+        shell: pwsh
+
+      - name: "Retrieve Previous Artifact File from Azure"
+        run: |
+          $ARTIFACTS = az storage blob list --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --query "[?starts_with(name, 'dev/output-')].name" -o tsv | Sort-Object -Descending
+          if ($ARTIFACTS.Count -gt 1) {
+              $PREVIOUS_ARTIFACT = $ARTIFACTS[1]
+              echo "PREVIOUS_ARTIFACT=$PREVIOUS_ARTIFACT" | Out-File -FilePath $Env:GITHUB_ENV -Append
+              Write-Host "Previous Artifact: $PREVIOUS_ARTIFACT"
+          } else {
+              Write-Host "No previous artifact found."
+          }
         shell: pwsh
 
       - name: "Generate New Artifact ID"
@@ -87,16 +101,17 @@ jobs:
       - name: "Upload to Azure Blob Storage"
         run: |
           if (Test-Path "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.ARTIFACT_FILE }}") {
-            Write-Host "Uploading ${{ env.ARTIFACT_FILE }}..."
-            az storage blob upload --account-name terraform0sa2 --container-name edial-function-app --name dev/${{ env.ARTIFACT_FILE }} --file ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.ARTIFACT_FILE }} --overwrite true --auth-mode login
+            echo "Uploading ${{ env.ARTIFACT_FILE }}..."
+            az storage blob upload --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --name dev/${{ env.ARTIFACT_FILE }} --file ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.ARTIFACT_FILE }} --overwrite true --auth-mode login
           } else {
-            Write-Host "ZIP file not found!"
+            echo "ZIP file not found!"
           }
         shell: pwsh
 
+
       - name: "Update Artifact Number Locally"
         run: |
-          echo "${{ env.NEW_ARTIFACT_NUMBER }}" | Out-File -FilePath "$Env:GITHUB_WORKSPACE\artifact_download\dev_artifact_number.txt"
+          echo "${{ env.NEW_ARTIFACT_NUMBER }}" | Out-File -FilePath "${{ github.workspace }}/artifact_download/dev_artifact_number.txt"
         shell: pwsh
 
       - name: "Upload Updated Artifact Number"
