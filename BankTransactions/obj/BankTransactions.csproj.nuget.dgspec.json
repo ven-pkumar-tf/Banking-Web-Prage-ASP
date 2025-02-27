@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\PasupathiKumarS\\Downloads\\Banking-Web-Prage-ASP\\BankTransactions\\BankTransactions.csproj": {}
+    "C:\\Users\\PasupathiKumarS\\OneDrive - C2S Technologies Inc\\Desktop\\DevOps\\Daily-Session-PPT\\Banking-Web-Prage-ASP\\BankTransactions\\BankTransactions.csproj": {}
   },
   "projects": {
-    "C:\\Users\\PasupathiKumarS\\Downloads\\Banking-Web-Prage-ASP\\BankTransactions\\BankTransactions.csproj": {
+    "C:\\Users\\PasupathiKumarS\\OneDrive - C2S Technologies Inc\\Desktop\\DevOps\\Daily-Session-PPT\\Banking-Web-Prage-ASP\\BankTransactions\\BankTransactions.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\PasupathiKumarS\\Downloads\\Banking-Web-Prage-ASP\\BankTransactions\\BankTransactions.csproj",
+        "projectUniqueName": "C:\\Users\\PasupathiKumarS\\OneDrive - C2S Technologies Inc\\Desktop\\DevOps\\Daily-Session-PPT\\Banking-Web-Prage-ASP\\BankTransactions\\BankTransactions.csproj",
         "projectName": "BankTransactions",
-        "projectPath": "C:\\Users\\PasupathiKumarS\\Downloads\\Banking-Web-Prage-ASP\\BankTransactions\\BankTransactions.csproj",
+        "projectPath": "C:\\Users\\PasupathiKumarS\\OneDrive - C2S Technologies Inc\\Desktop\\DevOps\\Daily-Session-PPT\\Banking-Web-Prage-ASP\\BankTransactions\\BankTransactions.csproj",
         "packagesPath": "C:\\Users\\PasupathiKumarS\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\PasupathiKumarS\\Downloads\\Banking-Web-Prage-ASP\\BankTransactions\\obj\\",
+        "outputPath": "C:\\Users\\PasupathiKumarS\\OneDrive - C2S Technologies Inc\\Desktop\\DevOps\\Daily-Session-PPT\\Banking-Web-Prage-ASP\\BankTransactions\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
