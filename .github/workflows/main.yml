@@ -99,8 +99,17 @@ jobs:
 
       - name: "Update Artifact Number Locally"
         run: |
-          echo "${{ env.NEW_ARTIFACT_NUMBER }}" | Out-File -FilePath "${{ github.workspace }}/artifact_download/dev_artifact_number.txt"
-          az storage blob upload --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --name dev-artifact-number/dev_artifact_number.txt --file $ARTIFACT_FILE_NAME --overwrite true --auth-mode login
+          $ARTIFACT_PATH="${{ github.workspace }}/artifact_download"
+    
+          if (!(Test-Path $ARTIFACT_PATH)) {
+              New-Item -ItemType Directory -Path $ARTIFACT_PATH -Force
+          }
+
+          # Write the artifact number to a file
+          echo "${{ env.NEW_ARTIFACT_NUMBER }}" | Out-File -FilePath "$ARTIFACT_PATH/dev_artifact_number.txt"
+
+          # Upload the updated artifact number file to Azure Blob Storage
+          az storage blob upload --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --name dev-artifact-number/dev_artifact_number.txt --file "$ARTIFACT_PATH/dev_artifact_number.txt" --overwrite true --auth-mode login
         shell: pwsh
 
       - name: "Upload Updated Artifact Number"
