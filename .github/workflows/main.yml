@@ -39,7 +39,7 @@ jobs:
       - name: "Download Previous Artifact Number"
         uses: actions/download-artifact@v4
         with:
-          name: azure-function-app-artifact
+          name: ${{ github.workspace }}
           path: artifact_download
         continue-on-error: true
 
