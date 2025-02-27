@@ -81,8 +81,10 @@ jobs:
           } else {
             echo "${{ env.ARTIFACT_FILE_NAME }} - ZIP file not found."
           }
-      - name: Fix Permissions
-        run: sudo chmod -R 777 BankTransactions/
+      - name: Fix Permissions (Windows)
+        run: |
+            icacls BankTransactions\ /grant Everyone:F /T /C /Q
+        shell: pwsh
 
       - name: Upload the artifact file to storage blob container
         run: |
