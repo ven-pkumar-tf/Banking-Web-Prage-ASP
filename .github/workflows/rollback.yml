@@ -6,6 +6,7 @@ on:
 jobs:
   dev-function-app-rollback:
     runs-on: windows-latest
+    #if: github.event.trigger.base.ref == 'develop' && github.event.pull_request.merged == true
     env:
       AZURE_FUNCTIONAPP_NAME: "tf-func-dev-testing-20"
       AZURE_FUNCTIONAPP_PACKAGE_PATH: "BankTransactions"
@@ -88,4 +89,4 @@ jobs:
         shell: bash
         run: |
           echo "Extracted files in rollback directory:"
-          ls -lh "${{ github.workspace }}/${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/dev-rollback-artifact"
+          ls "${{ github.workspace }}/${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/dev-rollback-artifact"
