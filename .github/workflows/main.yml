@@ -68,18 +68,7 @@ jobs:
           $NEW_ARTIFACT_NUMBER = [int]$ARTIFACT_NUMBER + 1
           echo "NEW_ARTIFACT_NUMBER=$NEW_ARTIFACT_NUMBER" | Out-File -FilePath $Env:GITHUB_ENV -Append
         shell: pwsh
-
-      - name: "Retrieve Previous Artifact File from Azure"
-        run: |
-          $ARTIFACTS = az storage blob list --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --query "[?starts_with(name, 'dev/output-')].name" -o tsv | Sort-Object -Descending
-          if ($ARTIFACTS.Count -gt 1) {
-              $PREVIOUS_ARTIFACT = $ARTIFACTS[1]
-              echo "PREVIOUS_ARTIFACT=$PREVIOUS_ARTIFACT" | Out-File -FilePath $Env:GITHUB_ENV -Append
-              Write-Host "Previous Artifact: $PREVIOUS_ARTIFACT"
-          } else {
-              Write-Host "No previous artifact found."
-          }
-        shell: pwsh
+        
 
       - name: "Generate New Artifact ID"
         run: |
