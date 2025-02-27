@@ -37,7 +37,7 @@ jobs:
           popd
 
       - name: "Download Previous Artifact Number"
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4.1.9
         with:
           name: ${{ github.workspace }}
           path: artifact_download
