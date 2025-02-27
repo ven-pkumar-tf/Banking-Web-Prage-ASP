@@ -87,6 +87,9 @@ jobs:
       - name: "Update the Artifact file number"
         run: |
           $NEW_ARTIFACT_NUMBER = $env:ARTIFACT_NUMBER
+          if (!(Test-Path $ARTIFACT_PATH)) {
+              New-Item -ItemType Directory -Path $ARTIFACT_PATH -Force
+          }
           Set-Content -Path "artifact_download/dev_artifact_number.txt" -Value $NEW_ARTIFACT_NUMBER
         shell: pwsh
 
