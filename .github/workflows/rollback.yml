@@ -24,7 +24,7 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path artifact_download
           az storage blob download --account-name $env:STORAGE_ACCOUNT --container-name $env:CONTAINER_NAME --name dev-artifact-number/dev_artifact_number.txt --file artifact_download/dev_artifact_number.txt --overwrite true --auth-mode login
-      
+
       - name: "Download Last Successful Deployed Artifact"
         shell: bash
         run: |
@@ -40,15 +40,17 @@ jobs:
           ARTIFACT_FILE_NAME="output-${ARTIFACT_NUMBER}-"
           echo "ARTIFACT_FILE=$ARTIFACT_FILE_NAME" >> $GITHUB_ENV
 
+          DOWNLOAD_PATH="${{ github.workspace }}/${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/rollback_files"
+          mkdir -p "$DOWNLOAD_PATH"
+
+          echo "Searching for files matching '$ARTIFACT_FILE_NAME'..."
+          
           FILE_NAME_LIST=$(az storage blob list --account-name ${{ env.STORAGE_ACCOUNT }} \
                             --container-name ${{ env.CONTAINER_NAME }} \
                             --query "[?contains(@.name, '$ARTIFACT_FILE_NAME')].name" \
                             --output tsv --auth-mode login)
 
-          DOWNLOAD_PATH="${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/rollback_files"
-          mkdir -p "$DOWNLOAD_PATH"
-
-          echo "Files matching '$ARTIFACT_FILE_NAME': $FILE_NAME_LIST"
+          echo "Matching files found: $FILE_NAME_LIST"
 
           if [[ -z "$FILE_NAME_LIST" ]]; then
             echo "Error: No matching artifacts found!"
@@ -75,17 +77,15 @@ jobs:
             fi
           done
 
-      - name: Extract Artifact File
+      - name: "Extract Artifact File"
         if: env.FILE_NAME != ''
         uses: hoatruongdev09/extract-zip-github-action@v1.2
         with:
-          input-path: $TARGET_FILE
-          output-path: ${{env.AZURE_FUNCTIONAPP_PACKAGE_PATH}}/dev-rollback-artifact
+          input-path: ${{ env.FILE_NAME }}
+          output-path: ${{ github.workspace }}/${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/dev-rollback-artifact
 
       - name: "List Extracted Files (Debugging)"
         shell: bash
         run: |
           echo "Extracted files in rollback directory:"
-          ls -lh "${{env.AZURE_FUNCTIONAPP_PACKAGE_PATH}}/dev-rollback-artifact"
-
-      
+          ls -lh "${{ github.workspace }}/${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/dev-rollback-artifact"
