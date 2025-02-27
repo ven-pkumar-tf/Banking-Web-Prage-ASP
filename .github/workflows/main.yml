@@ -48,54 +48,26 @@ jobs:
           path: artifact_download/dev_artifact_number.txt
         continue-on-error: true
 
-      - name: "Check if Previous Artifact Exists"
-        id: check_artifact
+      - name: "Download Previous Artifact Number"
+        continue-on-error: true
         run: |
-          ARTIFACT_ID=$(gh api repos/${{ github.repository }}/actions/artifacts --jq '.artifacts[] | select(.name=="azure-function-app-artifact") | .id')
-          if [ -z "$ARTIFACT_ID" ]; then
-            echo "Artifact does not exist. Skipping download."
-            echo "ARTIFACT_EXISTS=false" >> $GITHUB_ENV
-          else
-            echo "Artifact found. Proceeding with download."
-            echo "ARTIFACT_EXISTS=true" >> $GITHUB_ENV
-            echo "ARTIFACT_ID=$ARTIFACT_ID" >> $GITHUB_ENV
-          fi
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          az storage blob download --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --name dev-artifact-number/dev_artifact_number.txt --file dev_artifact_number.txt --overwrite true --auth-mode login
+        shell: pwsh
 
-      - name: "Download Previous Artifact"
-        if: env.ARTIFACT_EXISTS == 'true'
+      - name: "Determine Artifact Number"
+        shell: pwsh
         run: |
-          gh api -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -X GET "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ env.ARTIFACT_ID }}/zip" \
-            --output artifact.zip
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: "Check and Extract Previous Artifact Number"
-        run: |
-          $ARTIFACT_PATH="${{ github.workspace }}/artifact_download"
-
-          # Ensure directory exists
-          mkdir -p $ARTIFACT_PATH
-          
-          # Check if previous artifact number exists
-          if (Test-Path "$ARTIFACT_PATH/dev_artifact_number.txt") {
-              $ARTIFACT_NUMBER = Get-Content "$ARTIFACT_PATH/dev_artifact_number.txt"
-              Write-Host "Previous Artifact Number Found: $ARTIFACT_NUMBER"
+          $ARTIFACT_FILE = "dev_artifact_number.txt"
+          if (Test-Path $ARTIFACT_FILE) {
+            $ARTIFACT_NUMBER = Get-Content $ARTIFACT_FILE
+            Write-Host "Previous Artifact Number Found: $ARTIFACT_NUMBER"
           } else {
-              $ARTIFACT_NUMBER = 0
-              Write-Host "No previous artifact found. Starting from 0."
+            $ARTIFACT_NUMBER = 0
+            Write-Host "No previous artifact found. Starting from 0."
           }
 
-          # Increment artifact number
           $NEW_ARTIFACT_NUMBER = [int]$ARTIFACT_NUMBER + 1
           echo "NEW_ARTIFACT_NUMBER=$NEW_ARTIFACT_NUMBER" | Out-File -FilePath $Env:GITHUB_ENV -Append
-        shell: pwsh
-        
 
       - name: "Generate New Artifact ID"
         run: |
