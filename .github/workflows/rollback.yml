@@ -23,6 +23,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path artifact_download  # Ensure directory exists
           az storage blob download --account-name $env:STORAGE_ACCOUNT --container-name $env:CONTAINER_NAME --name dev-artifact-number/dev_artifact_number.txt --file artifact_download/dev_artifact_number.txt --overwrite true --auth-mode login
       
+      
       - name: "Download Last Successful Deployed Artifact File"
         shell: bash
         run: |
@@ -40,10 +41,14 @@ jobs:
 
           FILE_NAME_LIST=$(az storage blob list --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --query "[?contains(@.name, '$ARTIFACT_FILE_NAME')].name" --output tsv --auth-mode login)
 
-          for FILE_NAME in $FILE_NAME_LIST; do
-            echo "Downloading: $FILE_NAME"
-            az storage blob download --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --name "$FILE_NAME" --file "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/$FILE_NAME" --auth-mode login
-            echo "FILE_NAME=$FILE_NAME" >> $GITHUB_ENV
+          mkdir -p "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/dev"
+
+          echo "$FILE_NAME_LIST" | while read FILE_NAME; do
+            if [[ ! -z "$FILE_NAME" ]]; then
+              echo "Downloading: $FILE_NAME"
+              az storage blob download --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --name "$FILE_NAME" --file "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/dev/$FILE_NAME" --auth-mode login
+              echo "FILE_NAME=$FILE_NAME" >> $GITHUB_ENV
+            fi
           done
 
       - name: "Extract Artifact File"
