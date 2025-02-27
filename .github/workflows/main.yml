@@ -67,7 +67,7 @@ jobs:
 
           $DEPLOYED_TIME = (Get-Date).ToString("ddMMyyyy-HHmmss")
           echo "DEPLOYED_TIME=$DEPLOYED_TIME" >> $GITHUB_ENV
-          echo "ARTIFACT_ID=${ ARTIFACT_NUMBER }-${ DEPLOYED_TIME }" >> $GITHUB_ENV
+          echo "ARTIFACT_ID=${ ARTIFACT_NUMBER }" >> $GITHUB_ENV
           $ARTIFACT_FILE_NAME = "output-${ ARTIFACT_ID }.zip"
           echo "ARTIFACT_FILE=$ARTIFACT_FILE_NAME" >> $GITHUB_ENV
           echo "Artifact file name: $ARTIFACT_FILE_NAME"
