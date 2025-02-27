@@ -18,14 +18,14 @@ jobs:
         shell: pwsh
         run: |
           az login --service-principal --username "d42b3bc0-c31c-49e4-bcd7-93285a4f4977" --password "j-f8Q~R_M3AOMiJyK6SM9dBqXoWgdi9KTkRB8blf" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
-
+      
       - name: "Download Previous Artifact Number"
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path artifact_download
           az storage blob download --account-name $env:STORAGE_ACCOUNT --container-name $env:CONTAINER_NAME --name dev-artifact-number/dev_artifact_number.txt --file artifact_download/dev_artifact_number.txt --overwrite true --auth-mode login
-
-      - name: "Download Last Successful Deployed Artifact File"
+      
+      - name: "Download Last Successful Deployed Artifact"
         shell: bash
         run: |
           ARTIFACT_NUMBER=2  # Default value
@@ -40,15 +40,38 @@ jobs:
           ARTIFACT_FILE_NAME="output-${ARTIFACT_NUMBER}-"
           echo "ARTIFACT_FILE=$ARTIFACT_FILE_NAME" >> $GITHUB_ENV
 
-          FILE_NAME_LIST=$(az storage blob list --account-name $STORAGE_ACCOUNT --container-name $CONTAINER_NAME --query "[?contains(@.name, '$ARTIFACT_FILE_NAME')].name" --output tsv --auth-mode login)
+          FILE_NAME_LIST=$(az storage blob list --account-name ${{ env.STORAGE_ACCOUNT }} \
+                            --container-name ${{ env.CONTAINER_NAME }} \
+                            --query "[?contains(@.name, '$ARTIFACT_FILE_NAME')].name" \
+                            --output tsv --auth-mode login)
 
-          mkdir -p "$AZURE_FUNCTIONAPP_PACKAGE_PATH/dev"
+          DOWNLOAD_PATH="${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/rollback_files"
+          mkdir -p "$DOWNLOAD_PATH"
 
-          echo "$FILE_NAME_LIST" | while read FILE_NAME; do
+          echo "Files matching '$ARTIFACT_FILE_NAME': $FILE_NAME_LIST"
+
+          if [[ -z "$FILE_NAME_LIST" ]]; then
+            echo "Error: No matching artifacts found!"
+            exit 1
+          fi
+
+          for FILE_NAME in $FILE_NAME_LIST; do
             if [[ ! -z "$FILE_NAME" ]]; then
-              echo "Downloading: $FILE_NAME"
-              az storage blob download --account-name $STORAGE_ACCOUNT --container-name $CONTAINER_NAME --name "$FILE_NAME" --auth-mode login
-              echo "FILE_NAME=$FILE_NAME" >> $GITHUB_ENV
+              TARGET_FILE="$DOWNLOAD_PATH/$(basename "$FILE_NAME")"
+              echo "Downloading: $FILE_NAME to $TARGET_FILE"
+
+              az storage blob download --account-name ${{ env.STORAGE_ACCOUNT }} \
+                --container-name ${{ env.CONTAINER_NAME }} \
+                --name "$FILE_NAME" \
+                --file "$TARGET_FILE" \
+                --auth-mode login
+
+              if [[ ! -f "$TARGET_FILE" ]]; then
+                echo "Error: File download failed - $TARGET_FILE does not exist!"
+                exit 1
+              fi
+
+              echo "FILE_NAME=$TARGET_FILE" >> $GITHUB_ENV
             fi
           done
 
@@ -56,10 +79,24 @@ jobs:
         if: env.FILE_NAME != ''
         uses: montudor/action-zip@v1
         with:
-          args: unzip "$AZURE_FUNCTIONAPP_PACKAGE_PATH/dev/$FILE_NAME" -d "$AZURE_FUNCTIONAPP_PACKAGE_PATH/dev-extracted"
+          args: unzip ${{ env.FILE_NAME }} -d "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/rollback_extracted"
 
       - name: "List Extracted Files (Debugging)"
         shell: bash
         run: |
-          echo "Extracted Files in: $AZURE_FUNCTIONAPP_PACKAGE_PATH/dev-extracted"
-          ls -lh "$AZURE_FUNCTIONAPP_PACKAGE_PATH/dev-extracted"
+          echo "Extracted files in rollback directory:"
+          ls -lh "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/rollback_extracted"
+
+      - name: "Deploy to Azure Function App"
+        shell: bash
+        run: |
+          echo "Deploying the rolled-back artifact to Azure Function App..."
+          az functionapp deployment source config-zip --resource-group my-resource-group \
+            --name ${{ env.AZURE_FUNCTIONAPP_NAME }} --src "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/rollback_extracted"
+
+      - name: "Clean Up Temporary Files"
+        shell: bash
+        run: |
+          echo "Cleaning up temporary rollback files..."
+          rm -rf "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/rollback_files"
+          rm -rf "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/rollback_extracted"
