@@ -41,7 +41,7 @@ jobs:
       - name: "Download Previous Artifact Number"
         uses: actions/download-artifact@v4.1.9
         with:
-          name: $Env:GITHUB_WORKSPACE
+          name: ${{ Env:GITHUB_WORKSPACE }}
           path: artifact_download
         continue-on-error: true
 
