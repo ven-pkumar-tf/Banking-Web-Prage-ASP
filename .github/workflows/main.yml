@@ -10,44 +10,35 @@ permissions:
 
 jobs:
   Dev-Build-Deploy-Function:
-    #if: github.event.pull_request.base.ref == 'develop' && github.event.pull_request.merged == true
     if: github.ref == 'refs/heads/develop'
     environment: Development
-    runs-on: windows-latest # For Linux, use ubuntu-latest
+    runs-on: windows-latest
     env:
-      #AZURE_FUNCTIONAPP_NAME: "tf-func-dev-edial-in-westus-0020" # set this to your function app
-      AZURE_FUNCTIONAPP_NAME: "tf-func-dev-testing-20" # set this to your function app
-      AZURE_FUNCTIONAPP_PACKAGE_PATH: "BankTransactions" # set this to the path to your function app project, defaults to the repository root
-      DOTNET_VERSION: "6.0.x" # set this to the dotnet version to use (e.g. '2.1.x', '3.1.x', '5.0.x')
+      AZURE_FUNCTIONAPP_NAME: "tf-func-dev-testing-20"
+      AZURE_FUNCTIONAPP_PACKAGE_PATH: "BankTransactions"
+      DOTNET_VERSION: "6.0.x"
     steps:
       - name: "Checkout GitHub Action"
         uses: actions/checkout@v3
 
-      - name: AZ Login
+      - name: "Azure Login"
         run: |
-          az login --service-principal --username "d42b3bc0-c31c-49e4-bcd7-93285a4f4977" --password "j-f8Q~R_M3AOMiJyK6SM9dBqXoWgdi9KTkRB8blf" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
-            
-      - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
+          az login --service-principal --username "${{ secrets.AZURE_CLIENT_ID }}" --password "${{ secrets.AZURE_CLIENT_SECRET }}" --tenant "${{ secrets.AZURE_TENANT_ID }}"
+
+      - name: "Setup DotNet ${{ env.DOTNET_VERSION }} Environment"
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: "Resolve Project Dependencies Using Dotnet"
-        shell: pwsh # For Linux, use bash
+        shell: pwsh
         run: |
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
           dotnet build --configuration Release --output ./output
           popd
 
-      #- name: "Run Azure Functions Action"
-      #  uses: Azure/functions-action@v1
-      #  id: fa
-      #  with:
-      #    app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-      #    package: "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output"
-         
-      - name: Download a Build Artifact
-        uses: actions/download-artifact@v4.1.8
+      - name: "Download Previous Artifact Number"
+        uses: actions/download-artifact@v4
         with:
           name: azure-function-app-artifact
           path: artifact_download
@@ -57,58 +48,52 @@ jobs:
         run: |
           if (Test-Path "artifact_download/dev_artifact_number.txt") {
             $ARTIFACT_NUMBER = Get-Content "artifact_download/dev_artifact_number.txt"
-            echo "Previous Artifact ID: $ARTIFACT_NUMBER"
           } else {
             $ARTIFACT_NUMBER = 0
-            echo "No previous artifact ID found. Starting from $ARTIFACT_NUMBER."
           }
-          echo "Current Artifact Number is $ARTIFACT_NUMBER"
-          echo "ARTIFACT_NUMBER=$(( $ARTIFACT_NUMBER + 1 ))" >> $GITHUB_ENV
+          
+          $NEW_ARTIFACT_NUMBER = $ARTIFACT_NUMBER + 1
+          echo "ARTIFACT_NUMBER=$NEW_ARTIFACT_NUMBER" | Out-File -FilePath $Env:GITHUB_ENV -Append
 
           $DEPLOYED_TIME = (Get-Date).ToString("ddMMyyyy-HHmmss")
-          echo "DEPLOYED_TIME=$DEPLOYED_TIME" >> $GITHUB_ENV
-          echo "ARTIFACT_ID=$ARTIFACT_NUMBER" >> $GITHUB_ENV
+          echo "DEPLOYED_TIME=$DEPLOYED_TIME" | Out-File -FilePath $Env:GITHUB_ENV -Append
+
+          $ARTIFACT_ID = "$NEW_ARTIFACT_NUMBER-$DEPLOYED_TIME"
+          echo "ARTIFACT_ID=$ARTIFACT_ID" | Out-File -FilePath $Env:GITHUB_ENV -Append
+
           $ARTIFACT_FILE_NAME = "output-$ARTIFACT_ID.zip"
-          echo "ARTIFACT_FILE=$ARTIFACT_FILE_NAME" >> $GITHUB_ENV
-          echo "Artifact file name: $ARTIFACT_FILE_NAME"
+          echo "ARTIFACT_FILE=$ARTIFACT_FILE_NAME" | Out-File -FilePath $Env:GITHUB_ENV -Append
+        shell: pwsh
 
       - name: "Create ZIP Package"
         run: |
-          powershell Compress-Archive -Path "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output/*" -DestinationPath "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.ARTIFACT_FILE_NAME }}" -Force
-
-          if (Test-Path "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.ARTIFACT_FILE_NAME }}") {
-            echo "${{ env.ARTIFACT_FILE_NAME }} - ZIP file created successfully."
-          } else {
-            echo "${{ env.ARTIFACT_FILE_NAME }} - ZIP file not found."
-          }
-      - name: Fix Permissions (Windows)
-        run: |
-            icacls BankTransactions\ /grant Everyone:F /T /C /Q
+          Compress-Archive -Path "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output/*" -DestinationPath "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.ARTIFACT_FILE }}" -Force
         shell: pwsh
 
-      - name: Upload the artifact file to storage blob container
+      - name: "Fix Permissions (Windows)"
         run: |
-          if (Test-Path "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.ARTIFACT_FILE_NAME }}") {
-            echo "${{ env.ARTIFACT_FILE_NAME }} - ZIP file ready to upload.."
-            az login --service-principal --username "d42b3bc0-c31c-49e4-bcd7-93285a4f4977" --password "j-f8Q~R_M3AOMiJyK6SM9dBqXoWgdi9KTkRB8blf" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1" 
-            az storage blob upload --account-name terraform0sa2 --container-name edial-function-app --name dev/${{ env.ARTIFACT_FILE_NAME }} --file ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.ARTIFACT_FILE_NAME }} --overwrite true --auth-mode login
+          icacls BankTransactions /grant Everyone:F /T /C /Q
+        shell: pwsh
+
+      - name: "Upload the artifact file to storage blob container"
+        run: |
+          if (Test-Path "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.ARTIFACT_FILE }}") {
+            echo "${{ env.ARTIFACT_FILE }} - ZIP file ready to upload.."
+            az storage blob upload --account-name terraform0sa2 --container-name edial-function-app --name dev/${{ env.ARTIFACT_FILE }} --file ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.ARTIFACT_FILE }} --overwrite true --auth-mode login
           } else {
-            echo "${{ env.ARTIFACT_FILE_NAME }} - ZIP file not found."
+            echo "${{ env.ARTIFACT_FILE }} - ZIP file not found."
           }
+        shell: pwsh
 
       - name: "Update the Artifact file number"
         run: |
-          if (Test-Path "artifact_download/dev_artifact_number.txt") {
-            Remove-Item "artifact_download/dev_artifact_number.txt"
-            echo $ARTIFACT_NUMBER > dev_artifact_number.txt
-          } else {
-            echo $ARTIFACT_NUMBER > dev_artifact_number.txt
-          }
-      
-      - name: "Upload Artifact File"
-        uses: actions/upload-artifact@v4.6.1
-        with:
-            name: azure-function-app-artifact
-            path: "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/dev_artifact_number.txt"
-            retention-days: 365
+          $NEW_ARTIFACT_NUMBER = $env:ARTIFACT_NUMBER
+          Set-Content -Path "artifact_download/dev_artifact_number.txt" -Value $NEW_ARTIFACT_NUMBER
+        shell: pwsh
 
+      - name: "Upload Updated Artifact Number"
+        uses: actions/upload-artifact@v4
+        with:
+          name: azure-function-app-artifact
+          path: artifact_download/dev_artifact_number.txt
+          retention-days: 365
