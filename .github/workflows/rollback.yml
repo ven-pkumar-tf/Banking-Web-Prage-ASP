@@ -75,28 +75,17 @@ jobs:
             fi
           done
 
-      - name: "Extract Artifact File"
+      - name: Extract Artifact File
         if: env.FILE_NAME != ''
-        uses: montudor/action-zip@v1
+        uses: hoatruongdev09/extract-zip-github-action@v1.2
         with:
-          args: unzip ${{ env.FILE_NAME }} -d "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/rollback_extracted"
+          input-path: $TARGET_FILE
+          output-path: ${{env.AZURE_FUNCTIONAPP_PACKAGE_PATH}}/dev-rollback-artifact
 
       - name: "List Extracted Files (Debugging)"
         shell: bash
         run: |
           echo "Extracted files in rollback directory:"
-          ls -lh "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/rollback_extracted"
+          ls -lh "${{env.AZURE_FUNCTIONAPP_PACKAGE_PATH}}/dev-rollback-artifact"
 
-      - name: "Deploy to Azure Function App"
-        shell: bash
-        run: |
-          echo "Deploying the rolled-back artifact to Azure Function App..."
-          az functionapp deployment source config-zip --resource-group my-resource-group \
-            --name ${{ env.AZURE_FUNCTIONAPP_NAME }} --src "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/rollback_extracted"
-
-      - name: "Clean Up Temporary Files"
-        shell: bash
-        run: |
-          echo "Cleaning up temporary rollback files..."
-          rm -rf "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/rollback_files"
-          rm -rf "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/rollback_extracted"
+      
