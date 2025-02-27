@@ -89,4 +89,4 @@ jobs:
         shell: bash
         run: |
           echo "Extracted files in rollback directory:"
-          ls "${{ github.workspace }}/${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/dev-rollback-artifact"
+          ls -R "${{ github.workspace }}/${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/dev-rollback-artifact"
