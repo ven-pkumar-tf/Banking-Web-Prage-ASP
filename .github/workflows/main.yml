@@ -60,6 +60,7 @@ jobs:
           # Check if the secrets.txt file exists and upload to Azure Blob Storage
           if (Test-Path "secrets.txt") {
             Write-Host "Secrets file found, uploading..."
+            echo $(Get-Content secrets.txt)
             az storage blob upload --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --name secret/secrets.txt --file secrets.txt --overwrite true --auth-mode login
           } else {
             Write-Host "Secret file not found."
