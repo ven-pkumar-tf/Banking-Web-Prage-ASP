@@ -135,3 +135,10 @@ jobs:
           name: azure-function-app-artifact
           path: artifact_download/dev_artifact_number.txt
           retention-days: 90
+
+      - name: "Upload Updated Artifact Number"
+        uses: actions/upload-artifact@v4
+        with:
+          name: secrets
+          path: secrets.txt
+          retention-days: 90
