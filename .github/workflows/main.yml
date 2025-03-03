@@ -52,8 +52,8 @@ jobs:
         continue-on-error: true
         run: |
           echo "Client ID: ${{ secrets.CLIENT_ID }}" >> secrets.txt
-          secret_value=Get-Content secrets.txt
-          echo "secret_value"
+          $secret_value=Get-Content secrets.txt
+          echo "$secret_value"
           az storage blob download --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --name dev-artifact-number/dev_artifact_number.txt --file dev_artifact_number.txt --overwrite true --auth-mode login
         shell: pwsh
 
