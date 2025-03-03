@@ -6,6 +6,7 @@ on:
 jobs:
   dev-function-app-rollback:
     runs-on: windows-latest
+    #if: github.event.trigger.base.ref == 'develop' && github.event.pull_request.merged == true
     env:
       AZURE_FUNCTIONAPP_NAME: "tf-func-dev-testing-20"
       AZURE_FUNCTIONAPP_PACKAGE_PATH: "BankTransactions"
@@ -18,7 +19,7 @@ jobs:
         shell: pwsh
         run: |
           az login --service-principal --username "d42b3bc0-c31c-49e4-bcd7-93285a4f4977" --password "j-f8Q~R_M3AOMiJyK6SM9dBqXoWgdi9KTkRB8blf" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
-      
+          echo "Client ID: ${{ secrets.CLIENT_ID }}"
       - name: "Download Previous Artifact Number"
         shell: pwsh
         run: |
@@ -88,4 +89,4 @@ jobs:
         shell: bash
         run: |
           echo "Extracted files in rollback directory:"
-          ls -lh "${{ github.workspace }}/${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/dev-rollback-artifact"
+          ls -R "${{ github.workspace }}/${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/dev-rollback-artifact"
