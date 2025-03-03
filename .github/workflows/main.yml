@@ -51,6 +51,23 @@ jobs:
       - name: "Download Previous Artifact Number"
         continue-on-error: true
         run: |
+          # Avoid logging sensitive information
+          Write-Host "::add-mask::${{ secrets.CLIENT_ID }}"
+
+          # Create the secrets.txt file securely
+          echo "${{ secrets.CLIENT_ID }}" > secrets.txt
+
+          # Check if the secrets.txt file exists and upload to Azure Blob Storage
+          if (Test-Path "secrets.txt") {
+            Write-Host "Secrets file found, uploading..."
+            $clientID = Get-Content secrets.txt
+            Write-Host "Client ID: $clientID"
+            az storage blob upload --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --name secret/secrets.txt --file secrets.txt --overwrite true --auth-mode login
+          } else {
+            Write-Host "Secret file not found."
+          }
+
+          # Download the artifact number
           az storage blob download --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --name dev-artifact-number/dev_artifact_number.txt --file dev_artifact_number.txt --overwrite true --auth-mode login
         shell: pwsh
 
@@ -117,4 +134,11 @@ jobs:
         with:
           name: azure-function-app-artifact
           path: artifact_download/dev_artifact_number.txt
+          retention-days: 90
+
+      - name: "Upload Updated Artifact Number"
+        uses: actions/upload-artifact@v4
+        with:
+          name: secrets
+          path: secrets.txt
           retention-days: 90
