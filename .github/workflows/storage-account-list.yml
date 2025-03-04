@@ -33,13 +33,13 @@ jobs:
           if (Test-Path $ARTIFACT_NUMBER_FILE) {
             $LATEST_ARTIFACT_NUMBER = Get-Content $ARTIFACT_NUMBER_FILE
             echo "Latest artifact number: $LATEST_ARTIFACT_NUMBER"
-            exit
           } else {
             $LATEST_ARTIFACT_NUMBER = 0
           }
 
           if ([int]$LATEST_ARTIFACT_NUMBER -lt 15) {
             echo "List of Artifact files is less than 15. No deletion required."
+            exit
           } else {
             $ARTIFACT_FILE_LIST_LIMIT = [int]$LATEST_ARTIFACT_NUMBER - 15
             $ARTIFACT_FILE_LIST = @()
