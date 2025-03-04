@@ -26,12 +26,6 @@ jobs:
           az storage blob download --account-name ${{ env.STORAGE_ACCOUNT_NAME }} --container-name ${{ env.CONTAINER_NAME }} --name dev-artifact-number/dev_artifact_number.txt --file dev_artifact_number.txt --overwrite true --auth-mode login
         shell: pwsh
 
-      - name: "Download Previous Artifact Number"
-        continue-on-error: true
-        run: |
-          az storage blob download --account-name $env:STORAGE_ACCOUNT_NAME --container-name $env:CONTAINER_NAME --name dev-artifact-number/dev_artifact_number.txt --file dev_artifact_number.txt --overwrite true --auth-mode login
-        shell: pwsh
-
       - name: "List the Artifact file list and Delete Old Artifacts"
         run: |
           $ARTIFACT_NUMBER_FILE="dev_artifact_number.txt"
@@ -50,7 +44,7 @@ jobs:
             $ARTIFACT_FILE_LIST = @()
             
             for ($i = 1; $i -le $ARTIFACT_FILE_LIST_LIMIT; $i++) {
-              $ARTIFACT_FILE_LIST += "$i-"   # Ensure correct naming convention
+              $ARTIFACT_FILE_LIST += $i   # Ensure correct naming convention
             }
 
             echo "Artifacts to be deleted: $ARTIFACT_FILE_LIST"
@@ -59,7 +53,7 @@ jobs:
               echo "Searching for artifacts containing: $ARTIFACT_FILE_NAME"
 
               # Retrieve list of matching blob files
-              $DELETE_FILE_LIST = az storage blob list --account-name $env:STORAGE_ACCOUNT_NAME --container-name $env:CONTAINER_NAME --query "[?contains(@.name, '$ARTIFACT_FILE_NAME')].name" --output tsv --auth-mode login
+              $DELETE_FILE_LIST = az storage blob list --account-name $env:STORAGE_ACCOUNT_NAME --container-name $env:CONTAINER_NAME --query "[?contains(@.name, '$ARTIFACT_FILE_NAME-')].name" --output tsv --auth-mode login
 
               # Debugging: Print the raw output
               echo "Raw blob list output: $DELETE_FILE_LIST"
