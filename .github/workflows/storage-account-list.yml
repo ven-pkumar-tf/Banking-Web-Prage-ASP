@@ -1,4 +1,4 @@
-name: Control the Artifact File Storage
+name: Control and Cleanup Artifact Storage in Azure
 on:
   workflow_dispatch:
 
@@ -72,7 +72,7 @@ jobs:
                   }
                 }
               } else {
-                echo "No matching artifacts found for: $ARTIFACT_FILE_NAME"
+                echo "No matching artifacts found for: '$ARTIFACT_FILE_NAME-*.zip' (or) The artifact: '$ARTIFACT_FILE_NAME-*.zip' is already deleted."
               }
             }
           }
