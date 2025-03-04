@@ -1,0 +1,51 @@
+name: Control the Artifact File Storage
+on:
+  workflow_dispatch:
+
+jobs:
+  Dev-Artifact-Storage-File-Control:
+    if: github.ref == 'refs/heads/develop'
+    environment: Development
+    runs-on: windows-latest
+    env:
+      STORAGE_ACCOUNT_NAME: "terraform0sa2"
+      CONTAINER_NAME: "edial-function-app"
+    
+    steps:
+      - name: "Checkout GitHub Action"
+        uses: actions/checkout@v3
+      
+      # If you want to use Azure RBAC instead of Publish Profile, then uncomment the task below
+      - name: "Azure Login"
+        run: |
+          az login --service-principal --username "d42b3bc0-c31c-49e4-bcd7-93285a4f4977" --password "j-f8Q~R_M3AOMiJyK6SM9dBqXoWgdi9KTkRB8blf" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
+
+      - name: "Download Previous Artifact Number"
+        continue-on-error: true
+        run: |
+          az storage blob download --account-name ${{ env.STORAGE_ACCOUNT_NAME }} --container-name ${{ env.CONTAINER_NAME }} --name dev-artifact-number/dev_artifact_number.txt --file dev_artifact_number.txt --overwrite true --auth-mode login
+        shell: pwsh
+
+      - name: "List the Artifact file list"
+        run: |
+          $ARTIFACT_NUMBER_FILE="dev_artifact_number.txt"
+          
+          if (Test-Path $ARTIFACT_NUMBER_FILE) {
+            $LATEST_ARTIFACT_NUMBER = Get-Content $ARTIFACT_NUMBER_FILE
+          } else {
+            $LATEST_ARTIFACT_NUMBER = 0
+          }
+
+          if ([int]$LATEST_ARTIFACT_NUMBER -lt 15) {
+            echo "List of Artifact files is less than 15."
+          } else {
+            $ARTIFACT_FILE_LIST_LIMIT = [int]$LATEST_ARTIFACT_NUMBER - 15
+            $ARTIFACT_FILE_LIST = @()
+            
+            for ($i = 1; $i -le $ARTIFACT_FILE_LIST_LIMIT; $i++) {
+              $ARTIFACT_FILE_LIST += $i
+            }
+
+            echo "Artifact files to be deleted or archived: $ARTIFACT_FILE_LIST"
+          }
+        shell: pwsh
