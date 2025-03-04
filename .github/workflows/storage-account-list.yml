@@ -33,6 +33,7 @@ jobs:
           if (Test-Path $ARTIFACT_NUMBER_FILE) {
             $LATEST_ARTIFACT_NUMBER = Get-Content $ARTIFACT_NUMBER_FILE
             echo "Latest artifact number: $LATEST_ARTIFACT_NUMBER"
+            exit
           } else {
             $LATEST_ARTIFACT_NUMBER = 0
           }
