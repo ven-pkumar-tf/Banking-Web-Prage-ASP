@@ -53,7 +53,7 @@ jobs:
               echo "Searching for artifacts containing: $ARTIFACT_FILE_NAME"
 
               # Retrieve list of matching blob files
-              $DELETE_FILE_LIST = az storage blob list --account-name $env:STORAGE_ACCOUNT_NAME --container-name $env:CONTAINER_NAME --query "[?contains(@.name, '$ARTIFACT_FILE_NAME-')].name" --output tsv --auth-mode login
+              $DELETE_FILE_LIST = az storage blob list --account-name $env:STORAGE_ACCOUNT_NAME --container-name $env:CONTAINER_NAME --query "[?starts_with(@.name, '$ARTIFACT_FILE_NAME-')].name" --output tsv --auth-mode login
 
               # Debugging: Print the raw output
               echo "Raw blob list output: $DELETE_FILE_LIST"
