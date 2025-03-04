@@ -50,7 +50,7 @@ jobs:
             echo "Artifacts to be deleted: $ARTIFACT_FILE_LIST"
 
             foreach ($ARTIFACT_FILE_NAME in $ARTIFACT_FILE_LIST) {
-              echo "Searching for artifacts containing: $ARTIFACT_FILE_NAME"
+              echo "Searching for artifacts containing: '$ARTIFACT_FILE_NAME-*.zip' Files."
 
               # Retrieve list of matching blob files
               $DELETE_FILE_LIST = az storage blob list --account-name $env:STORAGE_ACCOUNT_NAME --container-name $env:CONTAINER_NAME --query "[?starts_with(@.name, 'dev/$ARTIFACT_FILE_NAME-')].name" --output tsv --auth-mode login
