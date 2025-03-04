@@ -35,7 +35,7 @@ jobs:
       - name: "List the Artifact file list and Delete Old Artifacts"
         run: |
           $ARTIFACT_NUMBER_FILE="dev_artifact_number.txt"
-          
+
           if (Test-Path $ARTIFACT_NUMBER_FILE) {
             $LATEST_ARTIFACT_NUMBER = Get-Content $ARTIFACT_NUMBER_FILE
             echo "Latest artifact number: $LATEST_ARTIFACT_NUMBER"
@@ -50,23 +50,35 @@ jobs:
             $ARTIFACT_FILE_LIST = @()
             
             for ($i = 1; $i -le $ARTIFACT_FILE_LIST_LIMIT; $i++) {
-              $ARTIFACT_FILE_LIST += "$i-"
+              $ARTIFACT_FILE_LIST += "$i-"   # Ensure correct naming convention
             }
 
             echo "Artifacts to be deleted: $ARTIFACT_FILE_LIST"
 
             foreach ($ARTIFACT_FILE_NAME in $ARTIFACT_FILE_LIST) {
               echo "Searching for artifacts containing: $ARTIFACT_FILE_NAME"
+
+              # Retrieve list of matching blob files
               $DELETE_FILE_LIST = az storage blob list --account-name $env:STORAGE_ACCOUNT_NAME --container-name $env:CONTAINER_NAME --query "[?contains(@.name, '$ARTIFACT_FILE_NAME')].name" --output tsv --auth-mode login
 
-              if ($DELETE_FILE_LIST) {
+              # Debugging: Print the raw output
+              echo "Raw blob list output: $DELETE_FILE_LIST"
+
+              # Ensure we split into an array in case multiple results are returned
+              $DELETE_FILE_LIST = $DELETE_FILE_LIST -split "`r`n"
+
+              # Check if there are files to delete
+              if ($DELETE_FILE_LIST -and $DELETE_FILE_LIST.Length -gt 0) {
                 foreach ($FILE in $DELETE_FILE_LIST) {
-                  echo "Deleting artifact: $FILE"
-                  az storage blob delete --account-name $env:STORAGE_ACCOUNT_NAME --container-name $env:CONTAINER_NAME --name $FILE --auth-mode login
+                  if ($FILE -ne "") {
+                    echo "Deleting artifact: $FILE"
+                    az storage blob delete --account-name $env:STORAGE_ACCOUNT_NAME --container-name $env:CONTAINER_NAME --name $FILE --auth-mode login
+                  }
                 }
               } else {
                 echo "No matching artifacts found for: $ARTIFACT_FILE_NAME"
               }
             }
           }
+
         shell: pwsh
