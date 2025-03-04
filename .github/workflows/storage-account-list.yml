@@ -52,7 +52,7 @@ jobs:
 
           foreach ($i in $ARTIFACT_FILE_LIST) {
             $ARTIFACT_FILE_NAME = "$i-"
-            $DELETE_FILE_LIST = az storage blob list --account-name $env:STORAGE_ACCOUNT --container-name $env:CONTAINER_NAME --query "[?contains(@.name, '$ARTIFACT_FILE_NAME')].name" --output tsv --auth-mode login
+            $DELETE_FILE_LIST = az storage blob list --account-name ${{ env.STORAGE_ACCOUNT_NAME }} --container-name ${{ env.CONTAINER_NAME }} --query "[?contains(@.name, '$ARTIFACT_FILE_NAME')].name" --output tsv --auth-mode login
             echo "Artifact File List: $DELETE_FILE_LIST"
           }
         shell: pwsh
