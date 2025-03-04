@@ -1,8 +1,6 @@
 name: Deploy DotNet project to Azure Function App
 on:
-  push:
-    branches:
-      - develop
+  workflow_dispatch:
 
 permissions:
   id-token: write
