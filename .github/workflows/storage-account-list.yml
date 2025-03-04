@@ -67,6 +67,8 @@ jobs:
                   if ($FILE -ne "") {
                     echo "Deleting artifact: $FILE"
                     az storage blob delete --account-name $env:STORAGE_ACCOUNT_NAME --container-name $env:CONTAINER_NAME --name $FILE --auth-mode login
+                  } else {
+                    echo "The artifact: $FILE is already deleted."
                   }
                 }
               } else {
