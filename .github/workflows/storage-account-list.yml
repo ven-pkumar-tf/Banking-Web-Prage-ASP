@@ -49,4 +49,9 @@ jobs:
 
             echo "Artifact files to be deleted or archived: $ARTIFACT_FILE_LIST"
           }
+          for ($i = 0; $i -le length$(ARTIFACT_FILE_LIST); $i ++){
+            $ARTIFACT_FILE_NAME="$(ARTIFACT_FILE_LIST[$i])-"
+            $DELETE_FILE_LIST=$(az storage blob list -account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --query "[?contains(@.name, '$ARTIFACT_FILE_NAME')].name" --output tsv --auth-mode login))
+            echo "Artifact File List: $DELETE_FILE_LIST"
+          }
         shell: pwsh
