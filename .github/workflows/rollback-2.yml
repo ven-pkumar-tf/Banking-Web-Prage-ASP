@@ -44,17 +44,16 @@ jobs:
 
           Write-Output "Ready to Download that rollback artifact file: $NthMinusOneFile"
 
-          DOWNLOAD_PATH="${{ github.workspace }}/${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/rollback_zip_files"
-          mkdir -p "$DOWNLOAD_PATH"
-          mkdir -p "$DOWNLOAD_PATH/rollback_files"
+          $DOWNLOAD_PATH="${{ github.workspace }}\$env:AZURE_FUNCTIONAPP_PACKAGE_PATH\rollback_zip_files"
+          New-Item -ItemType Directory -Force -Path "$DOWNLOAD_PATH"
+          New-Item -ItemType Directory -Force -Path "$DOWNLOAD_PATH\rollback_files"
 
-          TARGET_FILE="$DOWNLOAD_PATH/$(basename "$NthMinusOneFile")"
+          $TARGET_FILE="$DOWNLOAD_PATH\$(basename $NthMinusOneFile)"
 
           # Download the file and ensure it exists
           az storage blob download --account-name "${{ env.STORAGE_ACCOUNT }}" `
                     --container-name "${{ env.CONTAINER_NAME }}" `
                     --name "$NthMinusOneFile" --file "$TARGET_FILE" --auth-mode login
-      
 
       - name: "Extract Artifact File"
         uses: hoatruongdev09/extract-zip-github-action@v1.2
