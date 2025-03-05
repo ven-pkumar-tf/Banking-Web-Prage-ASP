@@ -56,8 +56,8 @@ jobs:
                     --name "$NthMinusOneFile" --file "$TARGET_FILE" --auth-mode login
 
       - name: "Extract Artifact File"
-        if: env.FILE_NAME != ''
+        if: ${{ steps.Blob Container files List.outputs.NthMinusOneFile != '' }}
         uses: hoatruongdev09/extract-zip-github-action@v1.2
         with:
           input-path: $TARGET_FILE
-          output-path: $PWD\$DOWNLOAD_PATH\rollback_files
+          output-path: ${{ github.workspace }}\$env:AZURE_FUNCTIONAPP_PACKAGE_PATH\rollback_zip_files\rollback_files
