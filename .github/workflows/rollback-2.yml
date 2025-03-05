@@ -44,37 +44,20 @@ jobs:
 
           Write-Output "Ready to Download that rollback artifact file: $NthMinusOneFile"
 
+          DOWNLOAD_PATH="${{ github.workspace }}/${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/rollback_zip_files"
+          mkdir -p "$DOWNLOAD_PATH"
+          mkdir -p "$DOWNLOAD_PATH/rollback_files"
+
+          TARGET_FILE="$DOWNLOAD_PATH/$(basename "$NthMinusOneFile")"
+
           # Download the file and ensure it exists
           az storage blob download --account-name "${{ env.STORAGE_ACCOUNT }}" `
                     --container-name "${{ env.CONTAINER_NAME }}" `
-                    --name "$NthMinusOneFile" --file "${{ github.workspace }}/$NthMinusOneFile" --auth-mode login
-
-          # Check if the file exists after download
-          if (Test-Path "${{ github.workspace }}/$NthMinusOneFile") {
-              Write-Output "File downloaded successfully: ${{ github.workspace }}/$NthMinusOneFile"
-          } else {
-              Write-Output "File download failed."
-              exit 1
-          }
+                    --name "$NthMinusOneFile" --file "$TARGET_FILE" --auth-mode login
       
-      - name: "Extract ZIP file using PowerShell"
-        shell: pwsh
-        run: |
-          $zipFile = "D:\a\Banking-Web-Prage-ASP\Banking-Web-Prage-ASP/$NthMinusOneFile"
-          $extractPath = "D:\a\Banking-Web-Prage-ASP\Banking-Web-Prage-ASP/BankTransactions/rollback-artifact"
-          try {
-              Write-Output "Extracting ZIP file..."
-              [System.IO.Compression.ZipFile]::ExtractToDirectory($zipFile, $extractPath)
-              Write-Output "Extraction successful"
-          }
-          catch {
-              Write-Error "Error extracting ZIP file: $_"
-              exit 1
-          }
-
 
       - name: "Extract Artifact File"
         uses: hoatruongdev09/extract-zip-github-action@v1.2
         with:
-          input-path: ${{ github.workspace }}/${{ env.NthMinusOneFile }}
-          output-path: ${{ github.workspace }}/${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/rollback-artifact
+          input-path: $TARGET_FILE
+          output-path: $DOWNLOAD_PATH/rollback_files
