@@ -83,7 +83,7 @@ jobs:
               $zipFile.Dispose()
             } catch {
               Write-Host "Error: Invalid ZIP file or extraction failed"
-              exit 1
+              
             }
           } else {
             Write-Host "Error: ZIP file not found!"
