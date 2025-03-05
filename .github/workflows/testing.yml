@@ -62,4 +62,7 @@ jobs:
               exit 1
           }
 
-          az storage blob download --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --auth-mode login --name $NthMinusOneFile --file "$Artifact_DOWNLOAD_PATH\$NthMinusOneFile"
+          $DownloadPath="${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\artifact_files\$NthMinusOneFile"
+          Write-Output "Downloading file to $DownloadPath"
+          
+          az storage blob download --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --name $NthMinusOneFile --file $DownloadPath --auth-mode login
