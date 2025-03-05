@@ -28,8 +28,7 @@ jobs:
                     --container-name ${{ env.CONTAINER_NAME }} `
                     --query "[].name" --output tsv --auth-mode login
 
-          $FileArray = $FileList -split "`n"  # Convert multiline string to an array
+          $SortedFiles = $FileList | Sort-Object {$_ -replace "\D", ""} -Descending
 
-          foreach ($File in $FileArray) {
-              Write-Output "$File"
-          }
+          Write-Output "Sorted Files:"
+          $SortedFiles
