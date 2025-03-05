@@ -76,6 +76,16 @@ jobs:
           if (Test-Path $zipPath) {
             Write-Host "ZIP file exists, verifying integrity..."
             
+            # Check file size and print the result
+            $fileSize = (Get-Item $zipPath).Length
+            Write-Host "File Size: $fileSize bytes"
+            
+            # If the file size is very small (e.g., 0 bytes), the download might have failed
+            if ($fileSize -lt 1000) {
+              Write-Host "Error: The ZIP file is empty or too small, likely indicating a download issue."
+              exit 1
+            }
+
             # Attempt to open the ZIP file to check if it is valid
             try {
               $zipFile = [System.IO.Compression.ZipFile]::OpenRead($zipPath)
@@ -83,7 +93,7 @@ jobs:
               $zipFile.Dispose()
             } catch {
               Write-Host "Error: Invalid ZIP file or extraction failed"
-              
+              exit 1
             }
           } else {
             Write-Host "Error: ZIP file not found!"
