@@ -29,3 +29,15 @@ jobs:
 
           New-Item -ItemType Directory -Force -Path $Artifact_DOWNLOAD_PATH
           New-Item -ItemType Directory -Force -Path $ARTIFACT_EXTRACT_PATH
+
+          if (Test-Path $ARTIFACT_EXTRACT_PATH){
+            Write-Output "Artifact Extract Path will created - $ARTIFACT_EXTRACT_PATH"
+          } else {
+            Write-Output "No Extract path will found."
+          }
+
+          if (Test-Path $Artifact_DOWNLOAD_PATH){
+            Write-Output "Artifact Download Path will created - $Artifact_DOWNLOAD_PATH"
+          } else {
+            Write-Output "No Download path is available."
+          }
