@@ -1,0 +1,30 @@
+name: Rollback 2
+on: 
+  workflow_dispatch:
+
+jobs:
+  second_rollback:
+    runs-on: windows-latest
+    #if: github.event.trigger.base.ref == 'develop' && github.event.pull_request.merged == true
+    env:
+      AZURE_FUNCTIONAPP_NAME: "tf-func-dev-testing-20"
+      AZURE_FUNCTIONAPP_PACKAGE_PATH: "BankTransactions"
+      DOTNET_VERSION: "6.0.x"
+      STORAGE_ACCOUNT: "terraform0sa1"
+      CONTAINER_NAME: "edial-function-app"
+
+    steps:
+      - name: "Checkout GitHub Action"
+        uses: actions/checkout@v3
+      
+      # If you want to use Azure RBAC instead of Publish Profile, then uncomment the task below
+      - name: "Azure Login"
+        run: |
+          az login --service-principal --username "d693b53d-6ea8-4242-81eb-deb5d5ce0f64" --password "Xis8Q~iazO69SeWpjFRKAxYhBUMsjkytfMoSCbFk" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
+      
+      - name: "Blob Container files List"
+        run: |
+          FILE_NAME_LIST=$(az storage blob list --account-name ${{ env.STORAGE_ACCOUNT }} \
+                            --container-name ${{ env.CONTAINER_NAME }} \
+                            --output tsv --auth-mode login)
+          echo "Matching files found: $FILE_NAME_LIST"
