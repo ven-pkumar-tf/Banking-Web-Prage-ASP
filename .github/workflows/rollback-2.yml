@@ -24,12 +24,12 @@ jobs:
       
       - name: "Blob Container files List"
         run: |
-          $FileList = az storage blob list --account-name terraform0sa1 `
-                    --container-name edial-function-app `
+          $FileList = az storage blob list --account-name ${{ env.STORAGE_ACCOUNT }} `
+                    --container-name ${{ env.CONTAINER_NAME }} `
                     --query "[].name" --output tsv --auth-mode login
 
           $FileArray = $FileList -split "`n"  # Convert multiline string to an array
 
           foreach ($File in $FileArray) {
-              Write-Output "File found: $File"
+              Write-Output "$File"
           }
