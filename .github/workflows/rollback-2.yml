@@ -47,11 +47,11 @@ jobs:
           # Download the file and ensure it exists
           az storage blob download --account-name "${{ env.STORAGE_ACCOUNT }}" `
                     --container-name "${{ env.CONTAINER_NAME }}" `
-                    --name "$NthMinusOneFile" --file "$NthMinusOneFile" --auth-mode login
+                    --name "$NthMinusOneFile" --file "${{ github.workspace }}/$NthMinusOneFile" --auth-mode login
 
           # Check if the file exists after download
-          if (Test-Path "$NthMinusOneFile") {
-              Write-Output "File downloaded successfully: $NthMinusOneFile"
+          if (Test-Path "${{ github.workspace }}/$NthMinusOneFile") {
+              Write-Output "File downloaded successfully: ${{ github.workspace }}/$NthMinusOneFile"
           } else {
               Write-Output "File download failed."
               exit 1
