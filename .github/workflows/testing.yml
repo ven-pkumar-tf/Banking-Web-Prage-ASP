@@ -24,3 +24,8 @@ jobs:
         shell: pwsh
         run: |
           Write-Output "${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
+          $Artifact_DOWNLOAD_PATH="${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\artifact_zip_files"
+          $ARTIFACT_EXTRACT_PATH="${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\artifact_files"
+
+          New-Item -ItemType Directory -Force -Path $Artifact_DOWNLOAD_PATH
+          New-Item -ItemType Directory -Force -Path $ARTIFACT_EXTRACT_PATH
