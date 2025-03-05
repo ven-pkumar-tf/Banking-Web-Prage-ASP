@@ -61,3 +61,5 @@ jobs:
               Write-Output "Not enough files to get the (n-1)th result."
               exit 1
           }
+
+          az storage blob download --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --auth-mode login --name $NthMinusOneFile --file "$Artifact_DOWNLOAD_PATH\$NthMinusOneFile"
