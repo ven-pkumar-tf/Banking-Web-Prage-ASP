@@ -46,7 +46,18 @@ jobs:
         shell: pwsh
         run: |
           $FILE_NAME_LIST=az storage blob list --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --auth-mode login --query "[].name" --output tsv
+          Write-Output "Artifact File Name List."
           Write-Output "$FILE_NAME_LIST"
 
           $SortedFiles = $FILE_NAME_LIST | Sort-Object {$_ -replace "\D", ""} -Descending
+          Write-Output "Artifact File Name List - Descending Order."
           Write-Output "$SortedFiles"
+
+          if ($SortedFiles.Count -ge 2) {
+              $NthMinusOneFile = $SortedFiles[1]  
+              echo "NthMinusOneFile=$NthMinusOneFile" >> $GITHUB_ENV
+              Write-Output "Previous Version Artifact File Name: $NthMinusOneFile"
+          } else {
+              Write-Output "Not enough files to get the (n-1)th result."
+              exit 1
+          }
