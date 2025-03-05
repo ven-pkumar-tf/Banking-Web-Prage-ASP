@@ -23,18 +23,20 @@ jobs:
           az login --service-principal --username "d693b53d-6ea8-4242-81eb-deb5d5ce0f64" --password "Xis8Q~iazO69SeWpjFRKAxYhBUMsjkytfMoSCbFk" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
       
       - name: "Blob Container files List"
+        shell: pwsh
         run: |
-          $FileList = az storage blob list --account-name ${{ env.STORAGE_ACCOUNT }} `
-                    --container-name ${{ env.CONTAINER_NAME }} `
+          $FileList = az storage blob list --account-name "${{ env.STORAGE_ACCOUNT }}" `
+                    --container-name "${{ env.CONTAINER_NAME }}" `
                     --query "[].name" --output tsv --auth-mode login
 
           $SortedFiles = $FileList | Sort-Object {$_ -replace "\D", ""} -Descending
 
           # Get the second item (n-1), where n = 1-based index
           if ($SortedFiles.Count -ge 2) {
-              $NthMinusOneFile = "2. " + $SortedFiles[1]  # Index 1 gives second item
+              $NthMinusOneFile = $SortedFiles[1]  # Index 1 gives second item (without "2. " prefix)
           } else {
-              $NthMinusOneFile = "Not enough files to get the (n-1)th result."
+              Write-Output "Not enough files to get the (n-1)th result."
+              exit 1
           }
 
           Write-Output "Sorted Files:"
@@ -42,9 +44,9 @@ jobs:
 
           Write-Output "Ready to Download that rollback artifact file: $NthMinusOneFile"
 
-          az storage blob download --account-name ${{ env.STORAGE_ACCOUNT }} `
-                    --container-name ${{ env.CONTAINER_NAME }} `
-                    --name $NthMinusOneFile --file $NthMinusOneFile --auth-mode login
+          az storage blob download --account-name "${{ env.STORAGE_ACCOUNT }}" `
+                    --container-name "${{ env.CONTAINER_NAME }}" `
+                    --name "$NthMinusOneFile" --file "$NthMinusOneFile" --auth-mode login
 
       - name: "Extract Artifact File"
         uses: hoatruongdev09/extract-zip-github-action@v1.2
