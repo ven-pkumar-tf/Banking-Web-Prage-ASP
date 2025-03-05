@@ -56,7 +56,7 @@ jobs:
                     --name "$NthMinusOneFile" --file "$TARGET_FILE" --auth-mode login
 
       - name: "Extract Artifact File"
-        if: ${{ env.NthMinusOneFile != '' }}
+        if: ${{ env.TARGET_FILE != '' }}
         uses: hoatruongdev09/extract-zip-github-action@v1.2
         with:
           input-path: ${{ github.workspace }}\$env:AZURE_FUNCTIONAPP_PACKAGE_PATH\rollback_zip_files\$(basename $NthMinusOneFile)
