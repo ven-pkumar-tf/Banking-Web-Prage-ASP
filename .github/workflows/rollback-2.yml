@@ -5,7 +5,6 @@ on:
 jobs:
   second_rollback:
     runs-on: windows-latest
-    #if: github.event.trigger.base.ref == 'develop' && github.event.pull_request.merged == true
     env:
       AZURE_FUNCTIONAPP_NAME: "tf-func-dev-testing-20"
       AZURE_FUNCTIONAPP_PACKAGE_PATH: "BankTransactions"
@@ -16,13 +15,13 @@ jobs:
     steps:
       - name: "Checkout GitHub Action"
         uses: actions/checkout@v3
-      
-      # If you want to use Azure RBAC instead of Publish Profile, then uncomment the task below
+
       - name: "Azure Login"
         run: |
           az login --service-principal --username "d693b53d-6ea8-4242-81eb-deb5d5ce0f64" --password "Xis8Q~iazO69SeWpjFRKAxYhBUMsjkytfMoSCbFk" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
-      
+
       - name: "Blob Container files List"
+        id: list_files
         shell: pwsh
         run: |
           $FileList = az storage blob list --account-name "${{ env.STORAGE_ACCOUNT }}" `
@@ -55,8 +54,10 @@ jobs:
                     --container-name "${{ env.CONTAINER_NAME }}" `
                     --name "$NthMinusOneFile" --file "$TARGET_FILE" --auth-mode login
 
+          echo "NthMinusOneFile=$NthMinusOneFile" >> $GITHUB_ENV
+
       - name: "Extract Artifact File"
-        if: ${{ steps.Blob Container files List.outputs.NthMinusOneFile != '' }}
+        if: ${{ env.NthMinusOneFile != '' }}
         uses: hoatruongdev09/extract-zip-github-action@v1.2
         with:
           input-path: $TARGET_FILE
