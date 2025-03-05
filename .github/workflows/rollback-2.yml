@@ -30,5 +30,14 @@ jobs:
 
           $SortedFiles = $FileList | Sort-Object {$_ -replace "\D", ""} -Descending
 
+          # Get the second item (n-1), where n = 1-based index
+          if ($SortedFiles.Count -ge 2) {
+              $NthMinusOneFile = "2. " + $SortedFiles[1]  # Index 1 gives second item
+          } else {
+              $NthMinusOneFile = "Not enough files to get the (n-1)th result."
+          }
+
           Write-Output "Sorted Files:"
           $SortedFiles
+
+          Write-Output "N-1 Result: $NthMinusOneFile"
