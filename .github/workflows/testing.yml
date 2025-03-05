@@ -23,4 +23,4 @@ jobs:
       - name: Download the rollback artifact file
         shell: pwsh
         run: |
-          Write-Output "${{ github.workspace }}/${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
+          Write-Output "${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
