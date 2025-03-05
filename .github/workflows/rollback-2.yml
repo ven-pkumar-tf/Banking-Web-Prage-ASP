@@ -47,7 +47,7 @@ jobs:
           $DOWNLOAD_PATH="${{ github.workspace }}\$env:AZURE_FUNCTIONAPP_PACKAGE_PATH\rollback_zip_files"
           $DESTINATION_PATH="$DOWNLOAD_PATH\rollback_files"
           New-Item -ItemType Directory -Force -Path "$DOWNLOAD_PATH"
-          New-Item -ItemType Directory -Force -Path "$DOWNLOAD_PATH\rollback_files"
+          New-Item -ItemType Directory -Force -Path "$DESTINATION_PATH"
 
           $TARGET_FILE="$DOWNLOAD_PATH\$(basename $NthMinusOneFile)"
           Write-Output "Downloading $NthMinusOneFile to $TARGET_FILE"
@@ -60,8 +60,7 @@ jobs:
           echo "DESTINATION_FILE_PATH=$DESTINATION_PATH" >> $GITHUB_ENV
 
       - name: "Extract Artifact File"
-        #if: ${{ env.NthMinusOneFile != '' }}
         uses: hoatruongdev09/extract-zip-github-action@v1.2
         with:
-          input-path: $FILE_PATH/$FILE_NAME
-          output-path: $DESTINATION_FILE_PATH
+          input-path: ${{ github.workspace }}\$env:AZURE_FUNCTIONAPP_PACKAGE_PATH\rollback_zip_files\$(basename $NthMinusOneFile)
+          output-path: ${{ github.workspace }}\$env:AZURE_FUNCTIONAPP_PACKAGE_PATH\rollback_zip_files\rollback_files
