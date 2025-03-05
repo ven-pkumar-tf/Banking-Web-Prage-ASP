@@ -13,13 +13,16 @@ jobs:
       CONTAINER_NAME: "edial-function-app"
 
     steps:
+      # Step 1: Checkout the code
       - name: "Checkout GitHub Action"
         uses: actions/checkout@v3
 
+      # Step 2: Azure Login
       - name: "Azure Login"
         run: |
           az login --service-principal --username "d693b53d-6ea8-4242-81eb-deb5d5ce0f64" --password "Xis8Q~iazO69SeWpjFRKAxYhBUMsjkytfMoSCbFk" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
 
+      # Step 3: List files in Blob Container
       - name: "Blob Container files List"
         id: list_files
         shell: pwsh
@@ -53,6 +56,7 @@ jobs:
 
           $TARGET_FILE="$DOWNLOAD_PATH\$(basename $NthMinusOneFile)"
           Write-Output "Downloading $NthMinusOneFile to $TARGET_FILE"
+          
           # Download the file and ensure it exists
           az storage blob download --account-name "${{ env.STORAGE_ACCOUNT }}" `
                     --container-name "${{ env.CONTAINER_NAME }}" `
@@ -61,8 +65,43 @@ jobs:
           echo "FILE_NAME=$(basename $NthMinusOneFile)" >> $GITHUB_ENV
           echo "DESTINATION_FILE_PATH=$DESTINATION_PATH" >> $GITHUB_ENV
 
+      # Step 4: Verify ZIP File Integrity
+      - name: "Verify ZIP File Integrity"
+        run: |
+          $zipPath = "${{ github.workspace }}\$env:AZURE_FUNCTIONAPP_PACKAGE_PATH\rollback_zip_files\$env:FILE_NAME"
+          
+          # Check if the file exists
+          if (Test-Path $zipPath) {
+            Write-Host "ZIP file exists, verifying integrity..."
+            
+            # Attempt to open the ZIP file to check if it is valid
+            try {
+              $zipFile = [System.IO.Compression.ZipFile]::OpenRead($zipPath)
+              Write-Host "ZIP file integrity is valid."
+              $zipFile.Dispose()
+            } catch {
+              Write-Host "Error: Invalid ZIP file or extraction failed"
+              exit 1
+            }
+          } else {
+            Write-Host "Error: ZIP file not found!"
+            exit 1
+          }
+
+      # Step 5: Extract the ZIP file
       - name: "Extract Artifact File"
         uses: hoatruongdev09/extract-zip-github-action@v1.2
         with:
           input-path: ${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\rollback_zip_files\${{ env.FILE_NAME }}
           output-path: ${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\rollback_zip_files
+
+      # Step 6: Verify extraction
+      - name: "Verify Extracted Files"
+        run: |
+          $extractedPath = "${{ github.workspace }}\$env:AZURE_FUNCTIONAPP_PACKAGE_PATH\rollback_zip_files\extracted"
+          if (Test-Path $extractedPath) {
+            Write-Host "Extraction Successful!"
+          } else {
+            Write-Host "Extraction Failed!"
+            exit 1
+          }
