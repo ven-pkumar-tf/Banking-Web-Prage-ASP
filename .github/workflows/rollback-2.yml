@@ -49,7 +49,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path "$DOWNLOAD_PATH\rollback_files"
 
           $TARGET_FILE="$DOWNLOAD_PATH\$(basename $NthMinusOneFile)"
-
+          Write-Output "Downloading $NthMinusOneFile to $TARGET_FILE"
           # Download the file and ensure it exists
           az storage blob download --account-name "${{ env.STORAGE_ACCOUNT }}" `
                     --container-name "${{ env.CONTAINER_NAME }}" `
