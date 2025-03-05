@@ -24,5 +24,5 @@ jobs:
       
       - name: "Blob Container files List"
         run: |
-          $FILE_NAME_LIST=az storage blob list --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --query "[].name" --output tsv --auth-mode login
+          FILE_NAME_LIST=$(az storage blob list --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --query "[].name" --output tsv --auth-mode login)
           echo "Matching files found: $FILE_NAME_LIST"
