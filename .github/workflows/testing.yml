@@ -1,0 +1,119 @@
+name: Rollback 2
+on: 
+  workflow_dispatch:
+
+jobs:
+  second_rollback:
+    runs-on: windows-latest
+    env:
+      AZURE_FUNCTIONAPP_NAME: "tf-func-dev-testing-20"
+      AZURE_FUNCTIONAPP_PACKAGE_PATH: "BankTransactions"
+      DOTNET_VERSION: "6.0.x"
+      STORAGE_ACCOUNT: "terraform0sa1"
+      CONTAINER_NAME: "edial-function-app"
+      FILE_NAME: "dev/functionapp-inbound-dev-04032025-000323.zip"  # Specific file name for dev
+
+    steps:
+      - name: "Checkout GitHub Action"
+        uses: actions/checkout@v3
+
+      - name: "Azure Login"
+        run: |
+          az login --service-principal --username "d693b53d-6ea8-4242-81eb-deb5d5ce0f64" --password "Xis8Q~iazO69SeWpjFRKAxYhBUMsjkytfMoSCbFk" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
+
+      - name: "Blob Container files List"
+        id: list_files
+        shell: pwsh
+        run: |
+          $FileList = az storage blob list --account-name "${{ env.STORAGE_ACCOUNT }}" `
+                        --container-name "${{ env.CONTAINER_NAME }}" `
+                        --query "[].name" --output tsv --auth-mode login
+
+          $SortedFiles = $FileList | Sort-Object {$_ -replace "\D", ""} -Descending
+
+          # Get the second item (n-1), where n = 1-based index
+          if ($SortedFiles.Count -ge 2) {
+              $NthMinusOneFile = $SortedFiles[1]  # Index 1 gives second item (without "2. " prefix)
+              echo "NthMinusOneFile=$NthMinusOneFile" >> $GITHUB_ENV
+          } else {
+              Write-Output "Not enough files to get the (n-1)th result."
+              exit 1
+          }
+
+          Write-Output "Sorted Files:"
+          $SortedFiles
+
+          Write-Output "Ready to Download that rollback artifact file: $NthMinusOneFile"
+
+          $DOWNLOAD_PATH="${{ github.workspace }}\$env:AZURE_FUNCTIONAPP_PACKAGE_PATH\rollback_zip_files"
+          $DESTINATION_PATH="$DOWNLOAD_PATH\rollback_files"
+          New-Item -ItemType Directory -Force -Path "$DOWNLOAD_PATH"
+          New-Item -ItemType Directory -Force -Path "$DESTINATION_PATH"
+          
+          Write-Output "github workspace: ${{ github.workspace }}"
+
+          $TARGET_FILE="$DOWNLOAD_PATH\$(basename $NthMinusOneFile)"
+          Write-Host "Downloading $NthMinusOneFile to $TARGET_FILE"
+          
+          # Download the file and ensure it exists
+          az storage blob download --account-name "${{ env.STORAGE_ACCOUNT }}" `
+                    --container-name "${{ env.CONTAINER_NAME }}" `
+                    --name "$NthMinusOneFile" --file "$TARGET_FILE" --auth-mode login
+          echo "FILE_PATH=$DOWNLOAD_PATH" >> $GITHUB_ENV
+          echo "FILE_NAME=$(basename $NthMinusOneFile)" >> $GITHUB_ENV
+          echo "DESTINATION_FILE_PATH=$DESTINATION_PATH" >> $GITHUB_ENV
+
+      # Step 4: Verify ZIP File Integrity
+      - name: "Verify ZIP File Integrity"
+        run: |
+          # Check and print the value of FILE_NAME to ensure the correct file name
+          Write-Host "Checking file name: $env:FILE_NAME"
+
+          # Construct path with correct file name
+          $zipPath = "${{ github.workspace }}\$env:AZURE_FUNCTIONAPP_PACKAGE_PATH\rollback_zip_files\$env:FILE_NAME"
+          Write-Host "Checking path: $zipPath"
+          
+          # Check if the file exists
+          if (Test-Path $zipPath) {
+            Write-Host "ZIP file exists, verifying integrity..."
+            
+            # Check file size and print the result
+            $fileSize = (Get-Item $zipPath).Length
+            Write-Host "File Size: $fileSize bytes"
+            
+            # If the file size is very small (e.g., 0 bytes), the download might have failed
+            if ($fileSize -lt 1000) {
+              Write-Host "Error: The ZIP file is empty or too small, likely indicating a download issue."
+              exit 1
+            }
+
+            # Attempt to open the ZIP file to check if it is valid
+            try {
+              $zipFile = [System.IO.Compression.ZipFile]::OpenRead($zipPath)
+              Write-Host "ZIP file integrity is valid."
+              $zipFile.Dispose()
+            } catch {
+              Write-Host "Error: Invalid ZIP file or extraction failed"
+              exit 1
+            }
+          } else {
+            Write-Host "Error: ZIP file not found!"
+            exit 1
+          }
+
+      # Step 5: Extract the ZIP file
+      - name: "Extract Artifact File"
+        uses: hoatruongdev09/extract-zip-github-action@v1.2
+        with:
+          input-path: ${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\rollback_zip_files\${{ env.FILE_NAME }}
+          output-path: ${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\rollback_zip_files
+
+      # Step 6: Verify extraction
+      - name: "Verify Extracted Files"
+        run: |
+          $extractedPath = "${{ github.workspace }}\$env:AZURE_FUNCTIONAPP_PACKAGE_PATH\rollback_zip_files\extracted"
+          if (Test-Path $extractedPath) {
+            Write-Host "Extraction Successful!"
+          } else {
+            Write-Host "Extraction Failed!"
+            exit 1
