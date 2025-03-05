@@ -51,5 +51,5 @@ jobs:
       - name: "Extract Artifact File"
         uses: hoatruongdev09/extract-zip-github-action@v1.2
         with:
-            input-path: $NthMinusOneFile
-            output-path: $NthMinusOneFile-dev-rollback-artifact
+          input-path: ${{ github.workspace }}/${{ env.NthMinusOneFile }}
+          output-path: ${{ github.workspace }}/rollback-artifact
