@@ -59,4 +59,4 @@ jobs:
         uses: hoatruongdev09/extract-zip-github-action@v1.2
         with:
           input-path: $TARGET_FILE
-          output-path: $DOWNLOAD_PATH/rollback_files
+          output-path: $PWD\$DOWNLOAD_PATH\rollback_files
