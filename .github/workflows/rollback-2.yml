@@ -48,6 +48,8 @@ jobs:
           $DESTINATION_PATH="$DOWNLOAD_PATH\rollback_files"
           New-Item -ItemType Directory -Force -Path "$DOWNLOAD_PATH"
           New-Item -ItemType Directory -Force -Path "$DESTINATION_PATH"
+          
+          Write-Output "github workspace: ${{ github.workspace }}"
 
           $TARGET_FILE="$DOWNLOAD_PATH\$(basename $NthMinusOneFile)"
           Write-Output "Downloading $NthMinusOneFile to $TARGET_FILE"
