@@ -24,45 +24,63 @@ jobs:
         shell: pwsh
         run: |
           Write-Output "${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
-          $Artifact_DOWNLOAD_PATH="${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\artifact_zip_files"
-          $ARTIFACT_EXTRACT_PATH="${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\artifact_files"
+          $Artifact_DOWNLOAD_PATH = "${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\artifact_zip_files"
+          $ARTIFACT_EXTRACT_PATH = "${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\artifact_files"
 
           New-Item -ItemType Directory -Force -Path $Artifact_DOWNLOAD_PATH
           New-Item -ItemType Directory -Force -Path $ARTIFACT_EXTRACT_PATH
 
-          if (Test-Path $ARTIFACT_EXTRACT_PATH){
-            Write-Output "Artifact Extract Path will created - $ARTIFACT_EXTRACT_PATH"
+          if (Test-Path $ARTIFACT_EXTRACT_PATH) {
+            Write-Output "Artifact Extract Path created - $ARTIFACT_EXTRACT_PATH"
           } else {
-            Write-Output "No Extract path will found."
+            Write-Output "No Extract path found."
           }
 
-          if (Test-Path $Artifact_DOWNLOAD_PATH){
-            Write-Output "Artifact Download Path will created - $Artifact_DOWNLOAD_PATH"
+          if (Test-Path $Artifact_DOWNLOAD_PATH) {
+            Write-Output "Artifact Download Path created - $Artifact_DOWNLOAD_PATH"
           } else {
-            Write-Output "No Download path is available."
+            Write-Output "No Download path available."
           }
 
       - name: Find the Rollback artifact file
         shell: pwsh
         run: |
-          $FILE_NAME_LIST=az storage blob list --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --auth-mode login --query "[].name" --output tsv
-          Write-Output "Artifact File Name List."
+          # List all blob names in the container
+          $FILE_NAME_LIST = az storage blob list --account-name $env:STORAGE_ACCOUNT --container-name $env:CONTAINER_NAME --auth-mode login --query "[].name" --output tsv
+          Write-Output "Artifact File Name List:"
           Write-Output "$FILE_NAME_LIST"
 
-          $SortedFiles = $FILE_NAME_LIST | Sort-Object {$_ -replace "\D", ""} -Descending
-          Write-Output "Artifact File Name List - Descending Order."
+          # Sort files by numeric value extracted from the name in descending order
+          $SortedFiles = $FILE_NAME_LIST | Sort-Object { $_ -replace "\D", "" } -Descending
+          Write-Output "Artifact File Name List - Descending Order:"
           Write-Output "$SortedFiles"
 
+          # Ensure we have at least 2 files and pick the (n-1)th file
           if ($SortedFiles.Count -ge 2) {
-              $NthMinusOneFile = $SortedFiles[1]  
-              echo "NthMinusOneFile=$NthMinusOneFile" >> $GITHUB_ENV
+              $NthMinusOneFile = $SortedFiles[1]
+              echo "NthMinusOneFile=$NthMinusOneFile" >> $env:GITHUB_ENV
               Write-Output "Previous Version Artifact File Name: $NthMinusOneFile"
           } else {
               Write-Output "Not enough files to get the (n-1)th result."
               exit 1
           }
 
-          $DownloadPath="${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\artifact_files\$NthMinusOneFile"
+          # Define the local base directory for downloads
+          $LocalBaseDir = "${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\artifact_files"
+          
+          # If the blob name contains subdirectories, create them locally
+          $SubDir = [System.IO.Path]::GetDirectoryName($NthMinusOneFile)
+          if (![string]::IsNullOrEmpty($SubDir)) {
+              $LocalDir = Join-Path $LocalBaseDir $SubDir
+              New-Item -ItemType Directory -Force -Path $LocalDir | Out-Null
+          } else {
+              $LocalDir = $LocalBaseDir
+          }
+
+          # Extract the file name and set the full download path
+          $LocalFileName = [System.IO.Path]::GetFileName($NthMinusOneFile)
+          $DownloadPath = Join-Path $LocalDir $LocalFileName
           Write-Output "Downloading file to $DownloadPath"
           
-          az storage blob download --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --name $NthMinusOneFile --file $DownloadPath --auth-mode login
+          # Download the blob to the specified local file path
+          az storage blob download --account-name $env:STORAGE_ACCOUNT --container-name $env:CONTAINER_NAME --name $NthMinusOneFile --file $DownloadPath --auth-mode login
