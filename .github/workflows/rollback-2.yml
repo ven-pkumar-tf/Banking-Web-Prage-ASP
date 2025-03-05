@@ -13,16 +13,13 @@ jobs:
       CONTAINER_NAME: "edial-function-app"
 
     steps:
-      # Step 1: Checkout the code
       - name: "Checkout GitHub Action"
         uses: actions/checkout@v3
 
-      # Step 2: Azure Login
       - name: "Azure Login"
         run: |
           az login --service-principal --username "d693b53d-6ea8-4242-81eb-deb5d5ce0f64" --password "Xis8Q~iazO69SeWpjFRKAxYhBUMsjkytfMoSCbFk" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
 
-      # Step 3: List files in Blob Container
       - name: "Blob Container files List"
         id: list_files
         shell: pwsh
@@ -69,6 +66,7 @@ jobs:
       - name: "Verify ZIP File Integrity"
         run: |
           $zipPath = "${{ github.workspace }}\$env:AZURE_FUNCTIONAPP_PACKAGE_PATH\rollback_zip_files\$env:FILE_NAME"
+          Write-Host "Checking path: $zipPath"
           
           # Check if the file exists
           if (Test-Path $zipPath) {
