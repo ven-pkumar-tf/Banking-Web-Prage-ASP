@@ -54,9 +54,10 @@ jobs:
           az storage blob download --account-name "${{ env.STORAGE_ACCOUNT }}" `
                     --container-name "${{ env.CONTAINER_NAME }}" `
                     --name "$NthMinusOneFile" --file "$TARGET_FILE" --auth-mode login
+          echo "FILE_NAME=$TARGET_FILE" >> $GITHUB_ENV
 
       - name: "Extract Artifact File"
-        if: ${{ env.TARGET_FILE != '' }}
+        if: ${{ env.FILE_NAME != '' }}
         uses: hoatruongdev09/extract-zip-github-action@v1.2
         with:
           input-path: ${{ github.workspace }}\$env:AZURE_FUNCTIONAPP_PACKAGE_PATH\rollback_zip_files\$(basename $NthMinusOneFile)
