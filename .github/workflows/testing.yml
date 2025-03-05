@@ -45,5 +45,5 @@ jobs:
       - name: Find the Rollback artifact file
         shell: pwsh
         run: |
-          $FILE_NAME_LIST=az stroage blob list --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --auth-mode login --query "[].name" --output tsv
+          $FILE_NAME_LIST=az storage blob list --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --auth-mode login --query "[].name" --output tsv
           Write-Output "$FILE_NAME_LIST"
