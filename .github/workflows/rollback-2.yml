@@ -56,6 +56,22 @@ jobs:
               Write-Output "File download failed."
               exit 1
           }
+      
+      - name: "Extract ZIP file using PowerShell"
+        shell: pwsh
+        run: |
+          $zipFile = "D:\a\Banking-Web-Prage-ASP\Banking-Web-Prage-ASP/$NthMinusOneFile"
+          $extractPath = "D:\a\Banking-Web-Prage-ASP\Banking-Web-Prage-ASP/BankTransactions/rollback-artifact"
+          try {
+              Write-Output "Extracting ZIP file..."
+              [System.IO.Compression.ZipFile]::ExtractToDirectory($zipFile, $extractPath)
+              Write-Output "Extraction successful"
+          }
+          catch {
+              Write-Error "Error extracting ZIP file: $_"
+              exit 1
+          }
+
 
       - name: "Extract Artifact File"
         uses: hoatruongdev09/extract-zip-github-action@v1.2
