@@ -40,4 +40,14 @@ jobs:
           Write-Output "Sorted Files:"
           $SortedFiles
 
-          Write-Output "N-1 Result: $NthMinusOneFile"
+          Write-Output "Ready to Download that rollback artifact file: $NthMinusOneFile"
+
+          az storage blob download --account-name ${{ env.STORAGE_ACCOUNT }} `
+                    --container-name ${{ env.CONTAINER_NAME }} `
+                    --name $NthMinusOneFile --file $NthMinusOneFile --auth-mode login
+
+      - name: "Extract Artifact File"
+        uses: hoatruongdev09/extract-zip-github-action@v1.2
+        with:
+            input-path: $NthMinusOneFile
+            output-path: $NthMinusOneFile-dev-rollback-artifact
