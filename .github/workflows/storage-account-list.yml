@@ -1,4 +1,4 @@
-name: Control the Artifact File Storage
+name: Control and Cleanup Artifact Storage in Azure
 on:
   workflow_dispatch:
 
@@ -26,12 +26,6 @@ jobs:
           az storage blob download --account-name ${{ env.STORAGE_ACCOUNT_NAME }} --container-name ${{ env.CONTAINER_NAME }} --name dev-artifact-number/dev_artifact_number.txt --file dev_artifact_number.txt --overwrite true --auth-mode login
         shell: pwsh
 
-      - name: "Download Previous Artifact Number"
-        continue-on-error: true
-        run: |
-          az storage blob download --account-name $env:STORAGE_ACCOUNT_NAME --container-name $env:CONTAINER_NAME --name dev-artifact-number/dev_artifact_number.txt --file dev_artifact_number.txt --overwrite true --auth-mode login
-        shell: pwsh
-
       - name: "List the Artifact file list and Delete Old Artifacts"
         run: |
           $ARTIFACT_NUMBER_FILE="dev_artifact_number.txt"
@@ -45,21 +39,22 @@ jobs:
 
           if ([int]$LATEST_ARTIFACT_NUMBER -lt 15) {
             echo "List of Artifact files is less than 15. No deletion required."
+            exit
           } else {
             $ARTIFACT_FILE_LIST_LIMIT = [int]$LATEST_ARTIFACT_NUMBER - 15
             $ARTIFACT_FILE_LIST = @()
             
             for ($i = 1; $i -le $ARTIFACT_FILE_LIST_LIMIT; $i++) {
-              $ARTIFACT_FILE_LIST += "$i-"   # Ensure correct naming convention
+              $ARTIFACT_FILE_LIST += $i   # Ensure correct naming convention
             }
 
             echo "Artifacts to be deleted: $ARTIFACT_FILE_LIST"
 
             foreach ($ARTIFACT_FILE_NAME in $ARTIFACT_FILE_LIST) {
-              echo "Searching for artifacts containing: $ARTIFACT_FILE_NAME"
+              echo "Searching for artifacts containing: '$ARTIFACT_FILE_NAME-*.zip' Files."
 
               # Retrieve list of matching blob files
-              $DELETE_FILE_LIST = az storage blob list --account-name $env:STORAGE_ACCOUNT_NAME --container-name $env:CONTAINER_NAME --query "[?contains(@.name, '$ARTIFACT_FILE_NAME')].name" --output tsv --auth-mode login
+              $DELETE_FILE_LIST = az storage blob list --account-name $env:STORAGE_ACCOUNT_NAME --container-name $env:CONTAINER_NAME --query "[?starts_with(@.name, 'dev/functionapp-inbound-dev-$ARTIFACT_FILE_NAME-')].name" --output tsv --auth-mode login
 
               # Debugging: Print the raw output
               echo "Raw blob list output: $DELETE_FILE_LIST"
@@ -73,10 +68,12 @@ jobs:
                   if ($FILE -ne "") {
                     echo "Deleting artifact: $FILE"
                     az storage blob delete --account-name $env:STORAGE_ACCOUNT_NAME --container-name $env:CONTAINER_NAME --name $FILE --auth-mode login
+                  } else {
+                    echo "The artifact: $FILE is already deleted."
                   }
                 }
               } else {
-                echo "No matching artifacts found for: $ARTIFACT_FILE_NAME"
+                echo "No matching artifacts found for: '$ARTIFACT_FILE_NAME-*.zip' (or) The artifact: '$ARTIFACT_FILE_NAME-*.zip' is already deleted."
               }
             }
           }
