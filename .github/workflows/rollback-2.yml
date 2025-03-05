@@ -61,4 +61,4 @@ jobs:
         uses: hoatruongdev09/extract-zip-github-action@v1.2
         with:
           input-path: ${{ github.workspace }}/${{ env.NthMinusOneFile }}
-          output-path: ${{ github.workspace }}/rollback-artifact-${{ env.NthMinusOneFile }}
+          output-path: ${{ github.workspace }}/${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/rollback-artifact
