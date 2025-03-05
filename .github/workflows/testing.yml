@@ -20,7 +20,7 @@ jobs:
         run: |
           az login --service-principal --username "d693b53d-6ea8-4242-81eb-deb5d5ce0f64" --password "Xis8Q~iazO69SeWpjFRKAxYhBUMsjkytfMoSCbFk" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
 
-      - name: Download the rollback artifact file
+      - name: Download & Extract Path creation
         shell: pwsh
         run: |
           Write-Output "${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
@@ -41,3 +41,9 @@ jobs:
           } else {
             Write-Output "No Download path is available."
           }
+
+      - name: Find the Rollback artifact file
+        shell: pwsh
+        run: |
+          $FILE_NAME_LIST=az stroage blob list --account-name ${{ env.STORAGE_ACCOUNT }} --container-name ${{ env.CONTAINER_NAME }} --auth-mode login --query "[].name" --output tsv
+          Write-Output "$FILE_NAME_LIST"
