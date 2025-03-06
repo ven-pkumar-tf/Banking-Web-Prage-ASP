@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   Dev-Build-Deploy-Function:
-    if: github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/main'
     environment: Development
     runs-on: windows-latest
     env:
