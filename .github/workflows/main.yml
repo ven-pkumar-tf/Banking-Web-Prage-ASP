@@ -47,7 +47,7 @@ jobs:
           $ARTIFACT_ID = "$DEPLOYED_TIME"
           echo "ARTIFACT_ID=$ARTIFACT_ID" | Out-File -FilePath $Env:GITHUB_ENV -Append
 
-          $ARTIFACT_FILE_NAME = "functionapp-inbound-dev-$ARTIFACT_ID.zip"
+          $ARTIFACT_FILE_NAME = "func-inbound-dev-$ARTIFACT_ID.zip"
           echo "ARTIFACT_FILE=$ARTIFACT_FILE_NAME" | Out-File -FilePath $Env:GITHUB_ENV -Append
         shell: pwsh
 
