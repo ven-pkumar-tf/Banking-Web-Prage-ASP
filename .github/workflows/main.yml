@@ -86,7 +86,8 @@ jobs:
 
       - name: "Generate New Artifact ID"
         run: |
-          $DEPLOYED_TIME = (Get-Date).ToString("ddMMyyyy-HHmmss")
+          $ISTZone = [System.TimeZoneInfo]::FindSystemTimeZoneById("India Standard Time")
+          $DEPLOYED_TIME = [System.TimeZoneInfo]::ConvertTimeFromUtc((Get-Date).ToUniversalTime(), $ISTZone).ToString("ddMMyyyy-HHmmss")
           echo "DEPLOYED_TIME=$DEPLOYED_TIME" | Out-File -FilePath $Env:GITHUB_ENV -Append
 
           $ARTIFACT_ID = "${{ env.NEW_ARTIFACT_NUMBER }}-$DEPLOYED_TIME"
