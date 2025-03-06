@@ -90,3 +90,9 @@ jobs:
         with:
           input-path: ${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\artifact_files\${{ env.NthMinusOneFile }}
           output-path: ${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\rollback_zip_files
+
+      - name: List Extracted Files (Debugging)
+        run: |
+         echo "Extracted files in rollback directory:"
+         ls -R "${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\rollback_zip_files"
+
