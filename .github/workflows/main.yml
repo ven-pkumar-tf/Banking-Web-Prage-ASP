@@ -40,7 +40,7 @@ jobs:
 
       - name: "Generate New Artifact ID"
         run: |
-          $ISTZone = [System.TimeZoneInfo]::FindSystemTimeZoneById("India Standard Time")
+          $ISTZone = [System.TimeZoneInfo]::FindSystemTimeZoneById("Pacific Standard Time")
           $DEPLOYED_TIME = [System.TimeZoneInfo]::ConvertTimeFromUtc((Get-Date).ToUniversalTime(), $ISTZone).ToString("yyyyMMddHHmmss")
           echo "DEPLOYED_TIME=$DEPLOYED_TIME" | Out-File -FilePath $Env:GITHUB_ENV -Append
 
@@ -53,7 +53,7 @@ jobs:
 
       - name: "Create ZIP Package"
         run: |
-          Compress-Archive -Path "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/*" -DestinationPath "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.ARTIFACT_FILE }}" -Force
+          Compress-Archive -Path "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output/*" -DestinationPath "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.ARTIFACT_FILE }}" -Force
         shell: pwsh
 
       - name: "Upload to Azure Blob Storage"
