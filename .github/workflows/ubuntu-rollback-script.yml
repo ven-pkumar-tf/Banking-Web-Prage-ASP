@@ -1,0 +1,87 @@
+name: Ubuntu Sample Rollback script
+on:
+  push:
+    branches:
+      - feature/develop
+env:
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: ./published
+  CONFIGURATION: Release
+  DOTNET_CORE_VERSION: 6.0.x
+  WORKING_DIRECTORY: ""
+  CS_PROJ_PATH: OFP_Functions/EDIALIntegration/EDIALIntegration.csproj
+
+  #AZURE_FUNCTIONAPP_NAME_DEV: tf-func-dev-mojo-westus-0001
+  #AZURE_FUNCTIONAPP_NAME_TEST: tf-func-test-mojo-westus-0001
+  #AZURE_FUNCTIONAPP_NAME_PROD: tf-func-prod-mojo-westus-0001
+  STORAGE_ACCOUNT_NAME: "terraform0sa1"
+  CONTAINER_NAME: "edial-function-app"
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: "Azure Login"
+        run: |
+          az login --service-principal --username "2bc2ec6c-2766-4df4-bfd0-cdcbf5bf97a4" --password "PFx8Q~mvZk~6UGLiyrbZ6w033DpYZXGz2kmUfckS" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
+
+      - name: "Download Last Successful Deployed Artifact"
+        shell: bash
+        run: |
+          ARTIFACT_NUMBER=2  # Default value
+          if [ -f "artifact_download/dev_artifact_number.txt" ]; then
+            ARTIFACT_NUMBER=$(cat "artifact_download/dev_artifact_number.txt")
+          fi
+
+          echo "Current Artifact Number: $ARTIFACT_NUMBER"
+          ARTIFACT_NUMBER=$((ARTIFACT_NUMBER - 1))
+          echo "ARTIFACT_NUMBER=$ARTIFACT_NUMBER" >> $GITHUB_ENV
+
+          ARTIFACT_FILE_NAME="output-${ARTIFACT_NUMBER}-"
+          echo "ARTIFACT_FILE=$ARTIFACT_FILE_NAME" >> $GITHUB_ENV
+
+          DOWNLOAD_PATH="${{ github.workspace }}/${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/rollback_files"
+          mkdir -p "$DOWNLOAD_PATH"
+
+          echo "Searching for files matching '$ARTIFACT_FILE_NAME'..."
+          
+          FILE_NAME_LIST=$(az storage blob list --account-name ${{ env.STORAGE_ACCOUNT }} \
+                            --container-name ${{ env.CONTAINER_NAME }} \
+                            --query "[?contains(@.name, '$ARTIFACT_FILE_NAME')].name" \
+                            --output tsv --auth-mode login)
+
+          echo "Matching files found: $FILE_NAME_LIST"
+
+          if [[ -z "$FILE_NAME_LIST" ]]; then
+            echo "Error: No matching artifacts found!"
+            exit 1
+          fi
+
+          for FILE_NAME in $FILE_NAME_LIST; do
+            if [[ ! -z "$FILE_NAME" ]]; then
+              TARGET_FILE="$DOWNLOAD_PATH/$(basename "$FILE_NAME")"
+              echo "Downloading: $FILE_NAME to $TARGET_FILE"
+
+              az storage blob download --account-name ${{ env.STORAGE_ACCOUNT }} \
+                --container-name ${{ env.CONTAINER_NAME }} \
+                --name "$FILE_NAME" \
+                --file "$TARGET_FILE" \
+                --auth-mode login
+
+              if [[ ! -f "$TARGET_FILE" ]]; then
+                echo "Error: File download failed - $TARGET_FILE does not exist!"
+                exit 1
+              fi
+
+              echo "FILE_NAME=$TARGET_FILE" >> $GITHUB_ENV
+            fi
+          done
+
+      - name: "Extract Artifact File"
+        if: env.FILE_NAME != ''
+        uses: hoatruongdev09/extract-zip-github-action@v1.2
+        with:
+          input-path: ${{ env.FILE_NAME }}
+          output-path: ${{ github.workspace }}/${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/dev-rollback-artifact
