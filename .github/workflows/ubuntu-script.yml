@@ -7,9 +7,7 @@ on:
 =======
       - feature/pasupathi/develop
 >>>>>>> 97bc1c0362272acf592836067a7fdd526675aaca
-    paths:
-      - **
-      - ".github/workflows/ubuntu-script.yml"
+
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: ./published
   CONFIGURATION: Release
