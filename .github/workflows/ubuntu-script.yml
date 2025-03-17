@@ -2,7 +2,11 @@ name: Deploy Mojo API to Func
 on:
   push:
     branches:
+<<<<<<< HEAD
       - feature/develop
+=======
+      - feature/pasupathi/develop
+>>>>>>> 97bc1c0362272acf592836067a7fdd526675aaca
     paths:
       - **
       - ".github/workflows/ubuntu-script.yml"
@@ -22,7 +26,11 @@ env:
 jobs:
   build_develop:
     #if: github.event.pull_request.base.ref == 'develop' && github.event.pull_request.merged == true
+<<<<<<< HEAD
     if: github.ref == 'refs/heads/feature/develop'
+=======
+    if: github.ref == 'refs/heads/feature/pasupathi/develop'
+>>>>>>> 97bc1c0362272acf592836067a7fdd526675aaca
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

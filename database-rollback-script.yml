@@ -1,0 +1,127 @@
+name: Edial Database Rollback Script
+on:
+  workflow_dispatch:
+    
+jobs:
+  dev_database_rollback:
+    runs-on: windows-latest
+    if: github.ref == 'refs/heads/feature/pasupathi/develop'
+    environment: Development
+    env:
+      STORAGE_ACCOUNT_NAME: "tfstdevtfstatewus01"
+      CONTAINER_NAME: "edial-database-artifact-files"
+      AZURE_DATABASE_PACKAGE_PATH: "database"
+    steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Download & Extract Path creation
+        id: list_files
+        shell: pwsh
+        run: |
+          Write-Output "${{ github.workspace }}\${{ env.AZURE_DATABASE_PACKAGE_PATH }}"
+          $Artifact_DOWNLOAD_PATH = "${{ github.workspace }}\${{ env.AZURE_DATABASE_PACKAGE_PATH }}\artifact_zip_files"
+          $ARTIFACT_EXTRACT_PATH = "${{ github.workspace }}\${{ env.AZURE_DATABASE_PACKAGE_PATH }}\artifact_files"
+
+          New-Item -ItemType Directory -Force -Path $Artifact_DOWNLOAD_PATH
+          New-Item -ItemType Directory -Force -Path $ARTIFACT_EXTRACT_PATH
+
+          if (Test-Path $ARTIFACT_EXTRACT_PATH) {
+            Write-Output "Artifact Extract Path created - $ARTIFACT_EXTRACT_PATH"
+          } else {
+            Write-Output "No Extract path found."
+          }
+
+          if (Test-Path $Artifact_DOWNLOAD_PATH) {
+            Write-Output "Artifact Download Path created - $Artifact_DOWNLOAD_PATH"
+          } else {
+            Write-Output "No Download path available."
+          }
+
+      - name: Find the Rollback artifact file
+        shell: pwsh
+        run: |
+          # List all blob names in the container
+          $FILE_NAME_LIST = az storage blob list --account-name $env:STORAGE_ACCOUNT_NAME --container-name $env:CONTAINER_NAME --auth-mode login --query "[].name" --output tsv
+          Write-Output "Artifact File Name List:"
+          Write-Output "$FILE_NAME_LIST"
+
+          # Sort files by numeric value extracted from the name in descending order
+          $SortedFiles = $FILE_NAME_LIST | Sort-Object { $_ -replace "\D", "" } -Descending
+          Write-Output "Artifact File Name List - Descending Order:"
+          Write-Output "$SortedFiles"
+
+          # Ensure we have at least 2 files and pick the (n-1)th file
+          if ($SortedFiles.Count -ge 2) {
+              $NthMinusOneFile = $SortedFiles[1]
+              echo "NthMinusOneFile=$NthMinusOneFile" >> $env:GITHUB_ENV
+              Write-Output "Previous Version Artifact File Name: $NthMinusOneFile"
+          } else {
+              Write-Output "Not enough files to get the (n-1)th result."
+              exit 1
+          }
+
+          # Define the local base directory for downloads
+          $LocalBaseDir = "${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\artifact_files"
+          
+          # If the blob name contains subdirectories, create them locally
+          $SubDir = [System.IO.Path]::GetDirectoryName($NthMinusOneFile)
+          if (![string]::IsNullOrEmpty($SubDir)) {
+              $LocalDir = Join-Path $LocalBaseDir $SubDir
+              New-Item -ItemType Directory -Force -Path $LocalDir | Out-Null
+          } else {
+              $LocalDir = $LocalBaseDir
+          }
+
+          # Extract the file name and set the full download path
+          $LocalFileName = [System.IO.Path]::GetFileName($NthMinusOneFile)
+          $DownloadPath = Join-Path $LocalDir $LocalFileName
+          Write-Output "Downloading file to $DownloadPath"
+          
+          # Download the blob to the specified local file path
+          az storage blob download --account-name $env:STORAGE_ACCOUNT_NAME --container-name $env:CONTAINER_NAME --name $NthMinusOneFile --file $DownloadPath --auth-mode login
+
+      - name: Extract Artifact File
+        uses: hoatruongdev09/extract-zip-github-action@v1.2
+        with:
+          input-path: ${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\artifact_files\${{ env.NthMinusOneFile }}
+          output-path: ${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\rollback_zip_files
+
+      - name: List Extracted Files (Debugging)
+        run: |
+         echo "Extracted files in rollback directory:"
+         ls "${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\rollback_zip_files"
+      
+      - name: Build DACPAC
+        run: |
+          dotnet build ${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\rollback_zip_files/sql/EDI/EDI.sqlproj --framework net40
+
+      - name: Upload DACPAC Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dacpac
+          path: ${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\rollback_zip_files/sql/EDI/bin/Debug/EDI.dacpac
+
+      - name: Run Pre-Deployment Scripts
+        uses: azure/sql-action@v2.2
+        with:
+          connection-string: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+          path: ${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\rollback_zip_files/predeployment/*.sql
+      
+      - name: Deploy DACPAC to Azure
+        uses: Azure/sql-action@v2
+        with:
+          connection-string: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+          path: ${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\rollback_zip_files/sql/EDI/bin/Debug/EDI.dacpac
+          arguments: "/p:DropObjectsNotInSource=true /p:ExcludeObjectTypes=Users /p:BlockOnPossibleDataLoss=false"
+          action: "publish"
+
+      - name: Run Post-Deployment Scripts
+        uses: azure/sql-action@v2.2
+        with:
+          connection-string: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+          path: ${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\rollback_zip_files/postdeployment/*.sql

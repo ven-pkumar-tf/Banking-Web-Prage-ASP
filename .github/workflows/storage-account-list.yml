@@ -1,0 +1,81 @@
+name: Control and Cleanup Artifact Storage in Azure
+on:
+  workflow_dispatch:
+
+jobs:
+  Dev-Artifact-Storage-File-Control:
+    if: github.ref == 'refs/heads/develop'
+    environment: Development
+    runs-on: windows-latest
+    env:
+      STORAGE_ACCOUNT_NAME: "terraform0sa2"
+      CONTAINER_NAME: "edial-function-app"
+    
+    steps:
+      - name: "Checkout GitHub Action"
+        uses: actions/checkout@v3
+      
+      # If you want to use Azure RBAC instead of Publish Profile, then uncomment the task below
+      - name: "Azure Login"
+        run: |
+          az login --service-principal --username "d42b3bc0-c31c-49e4-bcd7-93285a4f4977" --password "j-f8Q~R_M3AOMiJyK6SM9dBqXoWgdi9KTkRB8blf" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
+
+      - name: "Download Previous Artifact Number"
+        continue-on-error: true
+        run: |
+          az storage blob download --account-name ${{ env.STORAGE_ACCOUNT_NAME }} --container-name ${{ env.CONTAINER_NAME }} --name dev-artifact-number/dev_artifact_number.txt --file dev_artifact_number.txt --overwrite true --auth-mode login
+        shell: pwsh
+
+      - name: "List the Artifact file list and Delete Old Artifacts"
+        run: |
+          $ARTIFACT_NUMBER_FILE="dev_artifact_number.txt"
+
+          if (Test-Path $ARTIFACT_NUMBER_FILE) {
+            $LATEST_ARTIFACT_NUMBER = Get-Content $ARTIFACT_NUMBER_FILE
+            echo "Latest artifact number: $LATEST_ARTIFACT_NUMBER"
+          } else {
+            $LATEST_ARTIFACT_NUMBER = 0
+          }
+
+          if ([int]$LATEST_ARTIFACT_NUMBER -lt 15) {
+            echo "List of Artifact files is less than 15. No deletion required."
+            exit
+          } else {
+            $ARTIFACT_FILE_LIST_LIMIT = [int]$LATEST_ARTIFACT_NUMBER - 15
+            $ARTIFACT_FILE_LIST = @()
+            
+            for ($i = 1; $i -le $ARTIFACT_FILE_LIST_LIMIT; $i++) {
+              $ARTIFACT_FILE_LIST += $i   # Ensure correct naming convention
+            }
+
+            echo "Artifacts to be deleted: $ARTIFACT_FILE_LIST"
+
+            foreach ($ARTIFACT_FILE_NAME in $ARTIFACT_FILE_LIST) {
+              echo "Searching for artifacts containing: '$ARTIFACT_FILE_NAME-*.zip' Files."
+
+              # Retrieve list of matching blob files
+              $DELETE_FILE_LIST = az storage blob list --account-name $env:STORAGE_ACCOUNT_NAME --container-name $env:CONTAINER_NAME --query "[?starts_with(@.name, 'dev/functionapp-inbound-dev-$ARTIFACT_FILE_NAME-')].name" --output tsv --auth-mode login
+
+              # Debugging: Print the raw output
+              echo "Raw blob list output: $DELETE_FILE_LIST"
+
+              # Ensure we split into an array in case multiple results are returned
+              $DELETE_FILE_LIST = $DELETE_FILE_LIST -split "`r`n"
+
+              # Check if there are files to delete
+              if ($DELETE_FILE_LIST -and $DELETE_FILE_LIST.Length -gt 0) {
+                foreach ($FILE in $DELETE_FILE_LIST) {
+                  if ($FILE -ne "") {
+                    echo "Deleting artifact: $FILE"
+                    az storage blob delete --account-name $env:STORAGE_ACCOUNT_NAME --container-name $env:CONTAINER_NAME --name $FILE --auth-mode login
+                  } else {
+                    echo "The artifact: $FILE is already deleted."
+                  }
+                }
+              } else {
+                echo "No matching artifacts found for: '$ARTIFACT_FILE_NAME-*.zip' (or) The artifact: '$ARTIFACT_FILE_NAME-*.zip' is already deleted."
+              }
+            }
+          }
+
+        shell: pwsh

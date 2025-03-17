@@ -1,0 +1,88 @@
+name: Deploy DACPAC
+on:
+  push:
+    branches:
+      - feature/pasupathi/develop
+  #pull_request:
+  #  types:
+  #    - closed
+  #  branches:
+  #    - develop
+  #    - test
+  #    - main
+    paths:
+      - database/**
+      - ".github/workflows/database-deployment.yml"
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy_dacpac_dev:
+    if: github.ref == 'refs/heads/feature/pasupathi/develop'
+    environment: Development
+    runs-on: windows-latest
+    env:
+      STORAGE_ACCOUNT_NAME: "tfstdevtfstatewus01"
+      CONTAINER_NAME: "edial-database-artifact-files"
+      AZURE_DATABASE_PACKAGE_PATH: "database"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build DACPAC
+        run: dotnet build database/sql/EDI/EDI.sqlproj --framework net40
+
+      - name: Upload DACPAC Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dacpac
+          path: database/sql/EDI/bin/Debug/EDI.dacpac
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Run Pre-Deployment Scripts
+        uses: azure/sql-action@v2.2
+        with:
+          connection-string: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+          path: "database/predeployment/*.sql"
+
+      - name: Deploy DACPAC to Azure
+        uses: Azure/sql-action@v2
+        with:
+          connection-string: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+          path: "database/sql/EDI/bin/Debug/EDI.dacpac"
+          arguments: "/p:DropObjectsNotInSource=true /p:ExcludeObjectTypes=Users /p:BlockOnPossibleDataLoss=false"
+          action: "publish"
+
+      - name: Run Post-Deployment Scripts
+        uses: azure/sql-action@v2.2
+        with:
+          connection-string: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+          path: "database/postdeployment/*.sql"
+      
+      - name: Generate Artifact file name
+        run: |
+          $ISTZone = [System.TimeZoneInfo]::FindSystemTimeZoneById("Pacific Standard Time")
+          $DEPLOYED_TIME = [System.TimeZoneInfo]::ConvertTimeFromUtc((Get-Date).ToUniversalTime(), $ISTZone).ToString("yyyyMMddHHmmss")
+          echo "DEPLOYED_TIME=$DEPLOYED_TIME" | Out-File -FilePath $Env:GITHUB_ENV -Append
+
+          $ARTIFACT_ID = "sqldb-edial-dev-$DEPLOYED_TIME"
+          echo "ARTIFACT_ID=$ARTIFACT_ID" | Out-File -FilePath $Env:GITHUB_ENV -Append
+
+          $ARTIFACT_FILE_NAME = "$ARTIFACT_ID.zip"
+          echo "ARTIFACT_FILE=$ARTIFACT_FILE_NAME" | Out-File -FilePath $Env:GITHUB_ENV -Append
+      
+      - name: Create the Artifact File
+        run: |
+          powershell Compress-Archive -Path "database/*" -DestinationPath "${{ env.AZURE_DATABASE_PACKAGE_PATH }}/${{ env.ARTIFACT_FILE }}" -Force
+      
+      - name: Upload the artifact file to blob container
+        run: |
+          az storage blob upload --account-name ${{ env.STORAGE_ACCOUNT_NAME }} --container-name ${{ env.CONTAINER_NAME }} --name dev/${{ env.ARTIFACT_FILE }} --file ${{ env.AZURE_DATABASE_PACKAGE_PATH }}/${{ env.ARTIFACT_FILE }} --overwrite true --auth-mode login

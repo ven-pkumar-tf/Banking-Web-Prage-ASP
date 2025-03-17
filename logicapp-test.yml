@@ -1,0 +1,82 @@
+name: Deploy Logic App Workflow
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - develop
+      - test
+      - main
+    paths:
+      - logicapp/**
+      - ".github/workflows/logic-app-deployment.yml"
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AZURE_LOGIC_APP_NAME_DEV: "tf-logic-dev-edial-westus-0019"
+  AZURE_LOGIC_APP_NAME_TEST: "tf-logic-test-edial-westus-0001"
+  AZURE_LOGIC_APP_NAME_PROD: "tf-logic-prod-edial-westus-0001"
+  AZURE_WEBAPP_PACKAGE_PATH: ./published/LogicApp
+  STORAGE_ACCOUNT_NAME: "tfstdevtfstatewus01"
+  CONTAINER_NAME: "edial-logicapp-artifact-files"
+
+jobs:
+  logic_app_build_deploy_dev:
+    if: github.event.pull_request.base.ref == 'develop' && github.event.pull_request.merged == true
+    environment: Development
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Create the artifact file name
+        run: |
+          ISTZone="(Get-TimeZoneId -Name 'Pacific Standard Time')"
+          DEPLOYED_TIME=$(date "+%Y%m%d%H%M%S")
+          echo "DEPLOYED_TIME=$DEPLOYED_TIME" >> $GITHUB_ENV
+
+          ARTIFACT_ID="logic-edial-dev-$DEPLOYED_TIME"
+          ARTIFACT_FILE_NAME="$ARTIFACT_ID.zip"
+          echo "ARTIFACT_FILE=$ARTIFACT_FILE_NAME" >> $GITHUB_ENV
+
+      - name: Package logic
+        run: |
+          cd ./logicapp
+          mkdir -p ../output
+          zip -r "../output/$ARTIFACT_FILE" .
+
+      - name: Upload app zip package
+        uses: actions/upload-artifact@v4
+        with:
+          name: logicapp
+          path: ./output/
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: logicapp
+          path: ./output/
+
+      - name: Deploy to Azure Logic App
+        uses: Azure/functions-action@v1.3.1
+        id: la
+        with:
+          app-name: ${{ env.AZURE_LOGIC_APP_NAME_DEV }}
+          package: "./output/$ARTIFACT_FILE"
+
+      - name: Upload Artifact File to Blob Container
+        run: |
+          az storage blob upload --account-name ${{ env.STORAGE_ACCOUNT_NAME }} --container-name ${{ env.CONTAINER_NAME }} --name "dev/${{ env.ARTIFACT_FILE }}" --file "./output/$ARTIFACT_FILE" --overwrite true --auth-mode login
