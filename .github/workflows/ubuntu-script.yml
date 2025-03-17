@@ -1,0 +1,59 @@
+name: Deploy Mojo API to Func
+on:
+  push:
+    branches:
+      - feature/develop
+    paths:
+      - **
+      - ".github/workflows/ubuntu-script.yml"
+env:
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: ./published
+  CONFIGURATION: Release
+  DOTNET_CORE_VERSION: 6.0.x
+  WORKING_DIRECTORY: ""
+  CS_PROJ_PATH: OFP_Functions/EDIALIntegration/EDIALIntegration.csproj
+
+  #AZURE_FUNCTIONAPP_NAME_DEV: tf-func-dev-mojo-westus-0001
+  #AZURE_FUNCTIONAPP_NAME_TEST: tf-func-test-mojo-westus-0001
+  #AZURE_FUNCTIONAPP_NAME_PROD: tf-func-prod-mojo-westus-0001
+
+  STORAGE_ACCOUNT_NAME: "terraform0sa1"
+  CONTAINER_NAME: "edial-function-app"
+jobs:
+  build_develop:
+    #if: github.event.pull_request.base.ref == 'develop' && github.event.pull_request.merged == true
+    if: github.ref == 'refs/heads/feature/develop'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: "Azure Login"
+        run: |
+          az login --service-principal --username "d693b53d-6ea8-4242-81eb-deb5d5ce0f64" --password "Xis8Q~iazO69SeWpjFRKAxYhBUMsjkytfMoSCbFk" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{env.DOTNET_CORE_VERSION}}
+      
+      - name: Create the Artifact file name
+        run: |
+          ISTZone="(Get-TimeZone -Id 'Pacific Standard Time')"
+          DEPLOYED_TIME=$(date -u +"%Y%m%d%H%M%S")
+          echo "DEPLOYED_TIME=$DEPLOYED_TIME" >> $GITHUB_ENV
+
+          ARTIFACT_ID="func-api-mojo-dev-$DEPLOYED_TIME"
+          echo "ARTIFACT_ID=$ARTIFACT_ID" >> $GITHUB_ENV
+
+          ARTIFACT_FILE_NAME="$ARTIFACT_ID.zip"
+          echo "ARTIFACT_FILE=$ARTIFACT_FILE_NAME" >> $GITHUB_ENV
+
+      - name: Create the Artifact File
+        run: |
+          zip -r "${{ github.workspace }}/${{ env.ARTIFACT_FILE }}" "${{ github.workspace }}"
+
+      - name: Upload Artifact File
+        run: |
+          az storage blob upload --account-name ${{ env.STORAGE_ACCOUNT_NAME }} --container-name ${{ env.CONTAINER_NAME }} --name api/dev/${{ env.ARTIFACT_FILE }} --file ${{ github.workspace }}/${{ env.ARTIFACT_FILE }} --overwrite true --auth-mode login
+
