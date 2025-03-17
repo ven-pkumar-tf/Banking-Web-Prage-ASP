@@ -20,7 +20,6 @@ env:
   #AZURE_FUNCTIONAPP_NAME_DEV: tf-func-dev-mojo-westus-0001
   #AZURE_FUNCTIONAPP_NAME_TEST: tf-func-test-mojo-westus-0001
   #AZURE_FUNCTIONAPP_NAME_PROD: tf-func-prod-mojo-westus-0001
-
   STORAGE_ACCOUNT_NAME: "terraform0sa1"
   CONTAINER_NAME: "edial-function-app"
 jobs:
