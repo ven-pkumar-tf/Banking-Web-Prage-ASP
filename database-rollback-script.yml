@@ -1,31 +1,31 @@
-name: Rollback 3
-on: 
+name: Edial Database Rollback Script
+on:
   workflow_dispatch:
-
+    
 jobs:
-  second_rollback:
+  dev_database_rollback:
     runs-on: windows-latest
+    if: github.ref == 'refs/heads/feature/pasupathi/develop'
+    environment: Development
     env:
-      AZURE_FUNCTIONAPP_NAME: "tf-func-dev-testing-20"
-      AZURE_FUNCTIONAPP_PACKAGE_PATH: "BankTransactions"
-      DOTNET_VERSION: "6.0.x"
-      STORAGE_ACCOUNT: "terraform0sa1"
-      CONTAINER_NAME: "edial-function-app"
-      
+      STORAGE_ACCOUNT_NAME: "tfstdevtfstatewus01"
+      CONTAINER_NAME: "edial-database-artifact-files"
+      AZURE_DATABASE_PACKAGE_PATH: "database"
     steps:
-      - name: "Checkout GitHub Action"
-        uses: actions/checkout@v3
-
-      - name: "Azure Login"
-        run: |
-          az login --service-principal --username "d693b53d-6ea8-4242-81eb-deb5d5ce0f64" --password "Xis8Q~iazO69SeWpjFRKAxYhBUMsjkytfMoSCbFk" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Download & Extract Path creation
+        id: list_files
         shell: pwsh
         run: |
-          Write-Output "${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
-          $Artifact_DOWNLOAD_PATH = "${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\artifact_zip_files"
-          $ARTIFACT_EXTRACT_PATH = "${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\artifact_files"
+          Write-Output "${{ github.workspace }}\${{ env.AZURE_DATABASE_PACKAGE_PATH }}"
+          $Artifact_DOWNLOAD_PATH = "${{ github.workspace }}\${{ env.AZURE_DATABASE_PACKAGE_PATH }}\artifact_zip_files"
+          $ARTIFACT_EXTRACT_PATH = "${{ github.workspace }}\${{ env.AZURE_DATABASE_PACKAGE_PATH }}\artifact_files"
 
           New-Item -ItemType Directory -Force -Path $Artifact_DOWNLOAD_PATH
           New-Item -ItemType Directory -Force -Path $ARTIFACT_EXTRACT_PATH
@@ -46,7 +46,7 @@ jobs:
         shell: pwsh
         run: |
           # List all blob names in the container
-          $FILE_NAME_LIST = az storage blob list --account-name $env:STORAGE_ACCOUNT --container-name $env:CONTAINER_NAME --auth-mode login --query "[].name" --output tsv
+          $FILE_NAME_LIST = az storage blob list --account-name $env:STORAGE_ACCOUNT_NAME --container-name $env:CONTAINER_NAME --auth-mode login --query "[].name" --output tsv
           Write-Output "Artifact File Name List:"
           Write-Output "$FILE_NAME_LIST"
 
@@ -83,9 +83,9 @@ jobs:
           Write-Output "Downloading file to $DownloadPath"
           
           # Download the blob to the specified local file path
-          az storage blob download --account-name $env:STORAGE_ACCOUNT --container-name $env:CONTAINER_NAME --name $NthMinusOneFile --file $DownloadPath --auth-mode login
+          az storage blob download --account-name $env:STORAGE_ACCOUNT_NAME --container-name $env:CONTAINER_NAME --name $NthMinusOneFile --file $DownloadPath --auth-mode login
 
-      - name: "Extract Artifact File"
+      - name: Extract Artifact File
         uses: hoatruongdev09/extract-zip-github-action@v1.2
         with:
           input-path: ${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\artifact_files\${{ env.NthMinusOneFile }}
@@ -95,4 +95,33 @@ jobs:
         run: |
          echo "Extracted files in rollback directory:"
          ls "${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\rollback_zip_files"
+      
+      - name: Build DACPAC
+        run: |
+          dotnet build ${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\rollback_zip_files/sql/EDI/EDI.sqlproj --framework net40
 
+      - name: Upload DACPAC Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dacpac
+          path: ${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\rollback_zip_files/sql/EDI/bin/Debug/EDI.dacpac
+
+      - name: Run Pre-Deployment Scripts
+        uses: azure/sql-action@v2.2
+        with:
+          connection-string: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+          path: ${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\rollback_zip_files/predeployment/*.sql
+      
+      - name: Deploy DACPAC to Azure
+        uses: Azure/sql-action@v2
+        with:
+          connection-string: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+          path: ${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\rollback_zip_files/sql/EDI/bin/Debug/EDI.dacpac
+          arguments: "/p:DropObjectsNotInSource=true /p:ExcludeObjectTypes=Users /p:BlockOnPossibleDataLoss=false"
+          action: "publish"
+
+      - name: Run Post-Deployment Scripts
+        uses: azure/sql-action@v2.2
+        with:
+          connection-string: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+          path: ${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\rollback_zip_files/postdeployment/*.sql
