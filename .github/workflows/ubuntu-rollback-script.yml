@@ -92,7 +92,7 @@ jobs:
 
           # Extract the file name and set the full download path
           LocalFileName=$(basename "$NthMinusOneFile")
-          DownloadPath="$LocalDir/$LocalFileName"
+          DownloadPath="$LocalBaseDir/$LocalFileName"
           echo "Downloading file to $DownloadPath"
           
           # Download the blob to the specified local file path
