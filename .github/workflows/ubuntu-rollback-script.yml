@@ -95,6 +95,18 @@ jobs:
           # Download the blob to the specified local file path
           az storage blob download --account-name $STORAGE_ACCOUNT_NAME --container-name $CONTAINER_NAME --name "$NthMinusOneFile" --file "$DownloadPath" --auth-mode login
 
+          # Set DownloadPath to GitHub environment variable
+          echo "DownloadPath=$DownloadPath" >> $GITHUB_ENV
+
+      - name: Verify downloaded file exists
+        run: |
+          if [ -f "${{ env.DownloadPath }}" ]; then
+            echo "File exists: ${{ env.DownloadPath }}"
+          else
+            echo "File does not exist: ${{ env.DownloadPath }}"
+            exit 1
+          fi
+
       - name: Extract Artifact File
         uses: hoatruongdev09/extract-zip-github-action@v1.2
         with:
