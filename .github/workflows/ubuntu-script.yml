@@ -51,4 +51,3 @@ jobs:
       - name: Upload Artifact File
         run: |
           az storage blob upload --account-name ${{ env.STORAGE_ACCOUNT_NAME }} --container-name ${{ env.CONTAINER_NAME }} --name api/dev/${{ env.ARTIFACT_FILE }} --file ${{ github.workspace }}/${{ env.ARTIFACT_FILE }} --overwrite true --auth-mode login
-
