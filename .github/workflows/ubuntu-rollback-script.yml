@@ -76,7 +76,7 @@ jobs:
           fi
 
           # Define the local base directory for downloads
-          LocalBaseDir="${GITHUB_WORKSPACE}${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/artifact_files"
+          LocalBaseDir="${GITHUB_WORKSPACE}/${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/artifact_files"
           
           # If the blob name contains subdirectories, create them locally using forward slashes
           SubDir=$(dirname "$NthMinusOneFile" | sed 's|\\|/|g')  # Replace backslashes with forward slashes
