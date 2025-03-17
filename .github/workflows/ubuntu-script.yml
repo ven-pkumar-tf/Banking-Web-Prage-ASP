@@ -34,8 +34,12 @@ jobs:
       
       - name: Create the Artifact file name
         run: |
-          ISTZone="(Get-TimeZone -Id 'Pacific Standard Time')"
-          DEPLOYED_TIME=$(date -u +"%Y%m%d%H%M%S")
+          # Set timezone to PST
+          export TZ="America/Los_Angeles"
+          
+          # Get the current date and time in PST
+          DEPLOYED_TIME=$(date +"%Y%m%d%H%M%S")
+          
           echo "DEPLOYED_TIME=$DEPLOYED_TIME" >> $GITHUB_ENV
 
           ARTIFACT_ID="func-api-mojo-dev-$DEPLOYED_TIME"
@@ -43,6 +47,7 @@ jobs:
 
           ARTIFACT_FILE_NAME="$ARTIFACT_ID.zip"
           echo "ARTIFACT_FILE=$ARTIFACT_FILE_NAME" >> $GITHUB_ENV
+
 
       - name: Create the Artifact File
         run: |
