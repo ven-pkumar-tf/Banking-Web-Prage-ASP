@@ -50,7 +50,7 @@ jobs:
             Write-Output "No Download path available."
           }
 
-      - name: Find the Rollback artifact file
+      - name: Find the Rollback artifact file in api/dev/
         shell: bash
         run: |
           # List all blob names in the container
@@ -58,9 +58,14 @@ jobs:
           echo "Artifact File Name List:"
           echo "$FILE_NAME_LIST"
 
+          # Filter the files that are in the api/dev/ directory
+          ApiDevFiles=$(echo "$FILE_NAME_LIST" | grep "^api/dev/")
+          echo "Filtered Artifact File List (api/dev/):"
+          echo "$ApiDevFiles"
+
           # Sort files by numeric value extracted from the name in descending order
-          SortedFiles=$(echo "$FILE_NAME_LIST" | sort -t- -k4,4nr)
-          echo "Artifact File Name List - Descending Order:"
+          SortedFiles=$(echo "$ApiDevFiles" | sort -t- -k4,4nr)
+          echo "Filtered and Sorted Artifact File Name List - Descending Order:"
           echo "$SortedFiles"
 
           # Ensure we have at least 2 files and pick the (n-1)th file
