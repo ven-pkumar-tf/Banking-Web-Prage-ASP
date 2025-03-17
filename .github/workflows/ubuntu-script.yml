@@ -3,7 +3,7 @@ name: Deploy Mojo API to Func
 on:
   push:
     branches:
-      - feature/develop
+      - develop
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: ./published
   CONFIGURATION: Release
