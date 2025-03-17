@@ -10,9 +10,6 @@ env:
   WORKING_DIRECTORY: ""
   CS_PROJ_PATH: OFP_Functions/EDIALIntegration/EDIALIntegration.csproj
 
-  #AZURE_FUNCTIONAPP_NAME_DEV: tf-func-dev-mojo-westus-0001
-  #AZURE_FUNCTIONAPP_NAME_TEST: tf-func-test-mojo-westus-0001
-  #AZURE_FUNCTIONAPP_NAME_PROD: tf-func-prod-mojo-westus-0001
   STORAGE_ACCOUNT_NAME: "terraform0sa1"
   CONTAINER_NAME: "edial-function-app"
 
@@ -29,26 +26,26 @@ jobs:
 
       - name: Download & Extract Path creation
         id: list_files
-        shell: pwsh
+        shell: bash
         run: |
-          Write-Output "${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
-          $Artifact_DOWNLOAD_PATH = "${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\artifact_zip_files"
-          $ARTIFACT_EXTRACT_PATH = "${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\artifact_files"
+          echo "${{ github.workspace }}${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
+          Artifact_DOWNLOAD_PATH="${{ github.workspace }}${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/artifact_zip_files"
+          ARTIFACT_EXTRACT_PATH="${{ github.workspace }}${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/artifact_files"
 
-          New-Item -ItemType Directory -Force -Path $Artifact_DOWNLOAD_PATH
-          New-Item -ItemType Directory -Force -Path $ARTIFACT_EXTRACT_PATH
+          mkdir -p "$Artifact_DOWNLOAD_PATH"
+          mkdir -p "$ARTIFACT_EXTRACT_PATH"
 
-          if (Test-Path $ARTIFACT_EXTRACT_PATH) {
-            Write-Output "Artifact Extract Path created - $ARTIFACT_EXTRACT_PATH"
-          } else {
-            Write-Output "No Extract path found."
-          }
+          if [ -d "$ARTIFACT_EXTRACT_PATH" ]; then
+            echo "Artifact Extract Path created - $ARTIFACT_EXTRACT_PATH"
+          else
+            echo "No Extract path found."
+          fi
 
-          if (Test-Path $Artifact_DOWNLOAD_PATH) {
-            Write-Output "Artifact Download Path created - $Artifact_DOWNLOAD_PATH"
-          } else {
-            Write-Output "No Download path available."
-          }
+          if [ -d "$Artifact_DOWNLOAD_PATH" ]; then
+            echo "Artifact Download Path created - $Artifact_DOWNLOAD_PATH"
+          else
+            echo "No Download path available."
+          fi
 
       - name: Find the Rollback artifact file in api/dev/
         shell: bash
@@ -79,7 +76,7 @@ jobs:
           fi
 
           # Define the local base directory for downloads
-          LocalBaseDir="${GITHUB_WORKSPACE}/${AZURE_FUNCTIONAPP_PACKAGE_PATH}/artifact_files"
+          LocalBaseDir="${GITHUB_WORKSPACE}${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/artifact_files"
           
           # If the blob name contains subdirectories, create them locally using forward slashes
           SubDir=$(dirname "$NthMinusOneFile" | sed 's|\\|/|g')  # Replace backslashes with forward slashes
@@ -92,7 +89,7 @@ jobs:
 
           # Extract the file name and set the full download path
           LocalFileName=$(basename "$NthMinusOneFile")
-          DownloadPath="$LocalBaseDir/$LocalFileName"
+          DownloadPath="$LocalDir/$LocalFileName"
           echo "Downloading file to $DownloadPath"
           
           # Download the blob to the specified local file path
@@ -102,10 +99,9 @@ jobs:
         uses: hoatruongdev09/extract-zip-github-action@v1.2
         with:
           input-path: $DownloadPath
-          output-path: ${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\rollback_zip_files
+          output-path: ${{ github.workspace }}${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/rollback_zip_files
 
       - name: List Extracted Files (Debugging)
         run: |
          echo "Extracted files in rollback directory:"
-         ls "${{ github.workspace }}\${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}\rollback_zip_files"
-      
+         ls "${{ github.workspace }}${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/rollback_zip_files"
