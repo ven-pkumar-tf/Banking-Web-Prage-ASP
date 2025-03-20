@@ -16,10 +16,20 @@ jobs:
     steps:
       - name: "Checkout GitHub Action"
         uses: actions/checkout@v3
-      - name: Client id
+      - name: Store Secrets in a File
         shell: pwsh
         run: |
-          Write-Host "${{ env.CLIENT_ID }}"
+          $clientId = "${{ secrets.CLIENT_ID }}"
+
+          if (-not $clientId) { Write-Host "❌ CLIENT_ID is missing" }
+ 
+          "client-id: $clientId`" | Set-Content -Path secrets.txt
+
+      - name: Upload Secret File as an Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: secret_artifact
+          path: secrets.txt
       - name: Azure CLI Action
         uses: Azure/cli@v2.1.0
         with:
