@@ -27,17 +27,10 @@ jobs:
         uses: Azure/login@v2.2.0
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-      - name: Azure CLI Action
-        uses: Azure/cli@v2.1.0
-        with:
-          # Specify the script here
-          inlineScript: 
-            az login --service-principal --username "2bc2ec6c-2766-4df4-bfd0-cdcbf5bf97a4" --password "PFx8Q~mvZk~6UGLiyrbZ6w033DpYZXGz2kmUfckS" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
-
+      
       - name: "Azure Login"
         run: |
-          az login --service-principal --username "2bc2ec6c-2766-4df4-bfd0-cdcbf5bf97a4" --password "PFx8Q~mvZk~6UGLiyrbZ6w033DpYZXGz2kmUfckS" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
-
+          az account show
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v4
         with:
