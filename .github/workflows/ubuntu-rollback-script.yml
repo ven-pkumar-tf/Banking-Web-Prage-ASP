@@ -1,0 +1,119 @@
+name: Ubuntu Sample Rollback script
+on:
+  push:
+    branches:
+      - feature/develop
+env:
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: ./published
+  CONFIGURATION: Release
+  DOTNET_CORE_VERSION: 6.0.x
+  WORKING_DIRECTORY: ""
+  CS_PROJ_PATH: OFP_Functions/EDIALIntegration/EDIALIntegration.csproj
+
+  STORAGE_ACCOUNT_NAME: "terraform0sa1"
+  CONTAINER_NAME: "edial-function-app"
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: "Azure Login"
+        run: |
+          az login --service-principal --username "2bc2ec6c-2766-4df4-bfd0-cdcbf5bf97a4" --password "PFx8Q~mvZk~6UGLiyrbZ6w033DpYZXGz2kmUfckS" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
+
+      - name: Download & Extract Path creation
+        id: list_files
+        shell: bash
+        run: |
+          echo "${{ github.workspace }}${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
+          Artifact_DOWNLOAD_PATH="${{ github.workspace }}${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/artifact_zip_files"
+          ARTIFACT_EXTRACT_PATH="${{ github.workspace }}${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/artifact_files"
+
+          mkdir -p "$Artifact_DOWNLOAD_PATH"
+          mkdir -p "$ARTIFACT_EXTRACT_PATH"
+
+          if [ -d "$ARTIFACT_EXTRACT_PATH" ]; then
+            echo "Artifact Extract Path created - $ARTIFACT_EXTRACT_PATH"
+          else
+            echo "No Extract path found."
+          fi
+
+          if [ -d "$Artifact_DOWNLOAD_PATH" ]; then
+            echo "Artifact Download Path created - $Artifact_DOWNLOAD_PATH"
+          else
+            echo "No Download path available."
+          fi
+
+      - name: Find the Rollback artifact file in api/dev/
+        shell: bash
+        run: |
+          # List all blob names in the container
+          FILE_NAME_LIST=$(az storage blob list --account-name $STORAGE_ACCOUNT_NAME --container-name $CONTAINER_NAME --auth-mode login --query "[].name" --output tsv)
+          echo "Artifact File Name List:"
+          echo "$FILE_NAME_LIST"
+
+          # Filter the files that are in the api/dev/ directory
+          ApiDevFiles=$(echo "$FILE_NAME_LIST" | grep "^api/dev/")
+          echo "Filtered Artifact File List (api/dev/):"
+          echo "$ApiDevFiles"
+
+          # Sort files by numeric value extracted from the name in descending order
+          SortedFiles=$(echo "$ApiDevFiles" | sort -t- -k4,4nr)
+          echo "Filtered and Sorted Artifact File Name List - Descending Order:"
+          echo "$SortedFiles"
+
+          # Ensure we have at least 2 files and pick the (n-1)th file
+          if [ $(echo "$SortedFiles" | wc -l) -ge 2 ]; then
+              NthMinusOneFile=$(echo "$SortedFiles" | sed -n '2p')
+              echo "NthMinusOneFile=$NthMinusOneFile" >> $GITHUB_ENV
+              echo "Previous Version Artifact File Name: $NthMinusOneFile"
+          else
+              echo "Not enough files to get the (n-1)th result."
+              exit 1
+          fi
+
+          # Define the local base directory for downloads
+          LocalBaseDir="${GITHUB_WORKSPACE}/${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/artifact_files"
+          
+          # If the blob name contains subdirectories, create them locally using forward slashes
+          SubDir=$(dirname "$NthMinusOneFile" | sed 's|\\|/|g')  # Replace backslashes with forward slashes
+          if [ -n "$SubDir" ]; then
+              LocalDir="$LocalBaseDir/$SubDir"
+              mkdir -p "$LocalDir"
+          else
+              LocalDir="$LocalBaseDir"
+          fi
+
+          # Extract the file name and set the full download path
+          LocalFileName=$(basename "$NthMinusOneFile")
+          DownloadPath="$LocalDir/$LocalFileName"
+          echo "Downloading file to $DownloadPath"
+          
+          # Download the blob to the specified local file path
+          az storage blob download --account-name $STORAGE_ACCOUNT_NAME --container-name $CONTAINER_NAME --name "$NthMinusOneFile" --file "$DownloadPath" --auth-mode login
+
+          # Set DownloadPath to GitHub environment variable
+          echo "DownloadPath=$DownloadPath" >> $GITHUB_ENV
+
+      - name: Verify downloaded file exists
+        run: |
+          if [ -f "${{ env.DownloadPath }}" ]; then
+            echo "File exists: ${{ env.DownloadPath }}"
+          else
+            echo "File does not exist: ${{ env.DownloadPath }}"
+            exit 1
+          fi
+
+      - name: Extract Artifact File
+        uses: hoatruongdev09/extract-zip-github-action@v1.2
+        with:
+          input-path: ${{ env.DownloadPath }}
+          output-path: ${{ github.workspace }}${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/rollback_zip_files
+
+      - name: List Extracted Files (Debugging)
+        run: |
+         echo "Extracted files in rollback directory:"
+         ls "${{ github.workspace }}${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/rollback_zip_files"

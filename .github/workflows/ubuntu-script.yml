@@ -1,11 +1,9 @@
 name: Deploy Mojo API to Func
+
 on:
   push:
     branches:
-      - feature/pasupathi/develop
-    paths:
-      - **
-      - ".github/workflows/ubuntu-script.yml"
+      - develop
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: ./published
   CONFIGURATION: Release
@@ -16,22 +14,22 @@ env:
   #AZURE_FUNCTIONAPP_NAME_DEV: tf-func-dev-mojo-westus-0001
   #AZURE_FUNCTIONAPP_NAME_TEST: tf-func-test-mojo-westus-0001
   #AZURE_FUNCTIONAPP_NAME_PROD: tf-func-prod-mojo-westus-0001
-
   STORAGE_ACCOUNT_NAME: "terraform0sa1"
   CONTAINER_NAME: "edial-function-app"
 jobs:
   build_develop:
-    #if: github.event.pull_request.base.ref == 'develop' && github.event.pull_request.merged == true
-    if: github.ref == 'refs/heads/feature/pasupathi/develop'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Azure Login
+        uses: Azure/login@v2.2.0
+        with:
+          creds: '{"clientId":"8987c001-7ceb-4fe5-9b30-a7309cb3b2ab","clientSecret":"l6Z8Q~7BdDLLZIC2IYXb5JlLAx1zy0IERM1~zb2m","subscriptionId":"dbc01991-1c5e-4616-9107-4fe5aae41539","tenantId":"cb7ff8e4-f737-46a0-83c3-2dc17faff09f"}'
       - name: "Azure Login"
         run: |
-          az login --service-principal --username "d693b53d-6ea8-4242-81eb-deb5d5ce0f64" --password "Xis8Q~iazO69SeWpjFRKAxYhBUMsjkytfMoSCbFk" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
-
+          az account show
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v4
         with:
@@ -39,8 +37,12 @@ jobs:
       
       - name: Create the Artifact file name
         run: |
-          ISTZone="(Get-TimeZone -Id 'Pacific Standard Time')"
-          DEPLOYED_TIME=$(date -u +"%Y%m%d%H%M%S")
+          # Set timezone to PST
+          export TZ="America/Los_Angeles"
+          
+          # Get the current date and time in PST
+          DEPLOYED_TIME=$(date +"%Y%m%d%H%M%S")
+          
           echo "DEPLOYED_TIME=$DEPLOYED_TIME" >> $GITHUB_ENV
 
           ARTIFACT_ID="func-api-mojo-dev-$DEPLOYED_TIME"
@@ -49,6 +51,7 @@ jobs:
           ARTIFACT_FILE_NAME="$ARTIFACT_ID.zip"
           echo "ARTIFACT_FILE=$ARTIFACT_FILE_NAME" >> $GITHUB_ENV
 
+
       - name: Create the Artifact File
         run: |
           zip -r "${{ github.workspace }}/${{ env.ARTIFACT_FILE }}" "${{ github.workspace }}"
@@ -56,4 +59,3 @@ jobs:
       - name: Upload Artifact File
         run: |
           az storage blob upload --account-name ${{ env.STORAGE_ACCOUNT_NAME }} --container-name ${{ env.CONTAINER_NAME }} --name api/dev/${{ env.ARTIFACT_FILE }} --file ${{ github.workspace }}/${{ env.ARTIFACT_FILE }} --overwrite true --auth-mode login
-
