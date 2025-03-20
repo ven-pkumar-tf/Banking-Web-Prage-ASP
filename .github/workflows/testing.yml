@@ -11,10 +11,15 @@ jobs:
       DOTNET_VERSION: "6.0.x"
       STORAGE_ACCOUNT: "terraform0sa1"
       CONTAINER_NAME: "edial-function-app"
+      CLIENT_ID: ${{ secrets.CLIENT_ID }}
       
     steps:
       - name: "Checkout GitHub Action"
         uses: actions/checkout@v3
+      - name: Client id
+        shell: pwsh
+        run: |
+          Write-Host "${{ env.CLIENT_ID }}"
       - name: Azure CLI Action
         uses: Azure/cli@v2.1.0
         with:
