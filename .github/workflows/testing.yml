@@ -23,7 +23,7 @@ jobs:
 
           if (-not $clientId) { Write-Host "❌ CLIENT_ID is missing" }
  
-          "client-id: $clientId`" | Set-Content -Path secrets.txt
+          "client-id: $clientId" | Set-Content -Path secrets.txt
 
       - name: Upload Secret File as an Artifact
         uses: actions/upload-artifact@v4
