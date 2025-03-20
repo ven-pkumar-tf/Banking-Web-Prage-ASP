@@ -22,17 +22,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Azure CLI Action
-        uses: Azure/cli@v2.1.0
+
+      - name: Azure Login
+        uses: Azure/login@v2.2.0
         with:
-          # Specify the script here
-          inlineScript: 
-            az login --service-principal --username "d693b53d-6ea8-4242-81eb-deb5d5ce0f64" --password "Xis8Q~iazO69SeWpjFRKAxYhBUMsjkytfMoSCbFk" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"      
-   
+          creds: '{"clientId":"8987c001-7ceb-4fe5-9b30-a7309cb3b2ab","clientSecret":"l6Z8Q~7BdDLLZIC2IYXb5JlLAx1zy0IERM1~zb2m","subscriptionId":"dbc01991-1c5e-4616-9107-4fe5aae41539","tenantId":"cb7ff8e4-f737-46a0-83c3-2dc17faff09f"}'
       - name: "Azure Login"
         run: |
-          az login --service-principal --username "2bc2ec6c-2766-4df4-bfd0-cdcbf5bf97a4" --password "PFx8Q~mvZk~6UGLiyrbZ6w033DpYZXGz2kmUfckS" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
-
+          az account show
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v4
         with:
