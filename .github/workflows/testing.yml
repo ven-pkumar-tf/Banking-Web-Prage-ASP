@@ -38,7 +38,7 @@ jobs:
             az login --service-principal --username "d693b53d-6ea8-4242-81eb-deb5d5ce0f64" --password "Xis8Q~iazO69SeWpjFRKAxYhBUMsjkytfMoSCbFk" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"      
       - name: "Azure Login"
         run: |
-          az login --service-principal --username "d693b53d-6ea8-4242-81eb-deb5d5ce0f64" --password "Xis8Q~iazO69SeWpjFRKAxYhBUMsjkytfMoSCbFk" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
+          az login --service-principal --username ${{ secrets.C2S_CLIENT_ID }} --password ${{ secrets.C2S_CLIENT_SECRET }} --tenant ${{ secrets.C2S_TENANT_ID }}
 
       - name: Download & Extract Path creation
         shell: pwsh
