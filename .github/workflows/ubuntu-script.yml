@@ -29,7 +29,8 @@ jobs:
           creds: '{"clientId":"8987c001-7ceb-4fe5-9b30-a7309cb3b2ab","clientSecret":"l6Z8Q~7BdDLLZIC2IYXb5JlLAx1zy0IERM1~zb2m","subscriptionId":"dbc01991-1c5e-4616-9107-4fe5aae41539","tenantId":"cb7ff8e4-f737-46a0-83c3-2dc17faff09f"}'
       - name: "Azure Login"
         run: |
-          az account show
+          az login --service-principal --username ${{ secrets.C2S_CLIENT_ID }} --password ${{ secrets.C2S_CLIENT_SECRET }} --tenant ${{ secrets.C2S_TENANT_ID }}
+
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v4
         with:

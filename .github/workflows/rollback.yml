@@ -18,8 +18,8 @@ jobs:
       - name: "Azure Login"
         shell: pwsh
         run: |
-          az login --service-principal --username "d42b3bc0-c31c-49e4-bcd7-93285a4f4977" --password "j-f8Q~R_M3AOMiJyK6SM9dBqXoWgdi9KTkRB8blf" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"
-          
+          az login --service-principal --username ${{ secrets.C2S_CLIENT_ID }} --password ${{ secrets.C2S_CLIENT_SECRET }} --tenant ${{ secrets.C2S_TENANT_ID }}
+
       - name: "Download Previous Artifact Number"
         shell: pwsh
         run: |
