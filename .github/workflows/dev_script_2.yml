@@ -8,6 +8,7 @@ on:
     types: [closed]
     branches:
       - develop
+      - main  # Also add main to listen for PRs merged into main
 
 jobs:
   sample_job_1:
@@ -24,4 +25,4 @@ jobs:
     steps:
       - name: job_1
         run: |
-          echo "sample job 2 - PR merged into dev"
+          echo "sample job 2 - PR merged into main"
