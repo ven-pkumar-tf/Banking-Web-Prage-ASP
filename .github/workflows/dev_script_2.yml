@@ -1,5 +1,4 @@
 name: sample_script_2
-
 on:
   workflow_run:
     workflows: ['sample_script_1']
@@ -9,21 +8,20 @@ on:
     types: [closed]
     branches:
       - develop
-      - main
 
 jobs:
   sample_job_1:
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.pull_request.base.ref == 'develop' && github.event.pull_request.merged == true }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }} && github.event.pull_request.base.ref == 'develop' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: job_1
         run: |
-          echo "sample job 212 - test"
+          echo "sample job 2 - PR merged into develop"
     
   sample_job_21:
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.pull_request.base.ref == 'main' && github.event.pull_request.merged == true }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }} && github.event.pull_request.base.ref == 'main' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: job_1
         run: |
-          echo "sample job 212 - main"
+          echo "sample job 2 - PR merged into dev"
