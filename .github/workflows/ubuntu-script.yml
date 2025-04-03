@@ -1,9 +1,8 @@
 name: Deploy Mojo API to Func
 
 on:
-  push:
-    branches:
-      - develop
+  workflow_dispatch:
+    
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: ./published
   CONFIGURATION: Release
