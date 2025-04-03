@@ -8,10 +8,17 @@ on:
 
 jobs:
   sample_job_1:
-    if : github.event.pull_request.base.ref == 'main' && github.event.pull_request.merged == true
+    if : github.event.pull_request.base.ref == 'develop' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: job_1
         run: |
           echo "sample job 1"
-      
+
+      - name: job_2
+        run: |
+          echo "sample job 2"   
+      - name: az login
+        run: |
+          az login --service-principal --username ${{ secrets.C2S_CLIENT_ID }} --password ${{ secrets.C2S_CLIENT_SECRET }} --tenant ${{ secrets.C2S_TENANT_ID }}
+          az account show
