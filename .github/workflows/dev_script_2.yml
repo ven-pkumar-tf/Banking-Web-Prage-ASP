@@ -12,7 +12,7 @@ on:
 
 jobs:
   sample_job_1:
-    if: ${{ github.event.workflow_run.conclusion == 'success'  && github.event.workflow_run.workflow == 'sample_script_1' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success'  && github.event.workflow_run.workflow == 'sample_script_1' && github.event.pull_request.base.ref == 'develop' }}
     runs-on: ubuntu-latest
     steps:
       - name: job_1
@@ -20,7 +20,7 @@ jobs:
           echo "sample job 2 - PR merged into develop"
     
   sample_job_21:
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.workflow == 'main_script_1' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.workflow == 'main_script_1' && github.event.pull_request.base.ref == 'main' }}
     runs-on: ubuntu-latest
     steps:
       - name: job_1
