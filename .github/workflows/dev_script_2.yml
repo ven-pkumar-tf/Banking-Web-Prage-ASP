@@ -8,6 +8,7 @@ on:
     types: [closed]
     branches:
       - develop
+      - main
 
 jobs:
   sample_job_1:
