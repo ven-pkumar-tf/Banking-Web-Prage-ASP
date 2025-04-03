@@ -2,7 +2,7 @@ name: sample_script_2
 
 on:
   workflow_run:
-    workflows: ['sample_script_1', 'Deploy DotNet project to Azure Function App']
+    workflows: ['sample_script_1']
     types:
       - completed
   pull_request:
