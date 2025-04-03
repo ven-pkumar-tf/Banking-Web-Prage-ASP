@@ -1,8 +1,7 @@
 name: Ubuntu Sample Rollback script
 on:
-  push:
-    branches:
-      - feature/develop
+  workflow_dispatch:
+    
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: ./published
   CONFIGURATION: Release
