@@ -1,7 +1,9 @@
 name: sample_script_2
 on:
   workflow_run:
-    workflows: ['sample_script_1', 'main_script_1']
+    workflows: 
+      - sample_script_1
+      - main_script_1
     types:
       - completed
 jobs:
