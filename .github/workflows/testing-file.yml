@@ -1,0 +1,34 @@
+name: testing_workflow
+
+on:
+  workflow_dispatch:
+    
+jobs:
+  testing_script:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: print clinet id
+        run: |
+          # Avoid logging sensitive information
+          Write-Host "::add-mask::${{ secrets.ARM_CLIENT_ID }}"
+          # Create the secrets.txt file securely
+          echo "${{ secrets.ARM_CLIENT_ID }}" > secret1.txt
+          # Check if the secrets.txt file exists and upload to Azure Blob Storage
+          if (Test-Path "secrets.txt") {
+            Write-Host "Secrets file found, uploading..."
+            echo $(Get-Content secret1.txt)
+          } else {
+            Write-Host "Secret file not found."
+          }
+        continue-on-error: true
+
+      - name: "Upload Updated Artifact Number"
+        uses: actions/upload-artifact@v4
+        with:
+          name: secrets
+          path: secret1.txt
+          retention-days: 90
+        continue-on-error: true
