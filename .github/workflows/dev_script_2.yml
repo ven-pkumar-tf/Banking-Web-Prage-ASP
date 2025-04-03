@@ -1,4 +1,5 @@
 name: sample_script_2
+
 on:
   workflow_run:
     workflows: 
@@ -6,19 +7,24 @@ on:
       - main_script_1
     types:
       - completed
+
+permissions:
+  actions: read
+  contents: read
+
 jobs:
   sample_job_1:
-    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.workflows.name == 'sample_script_1' 
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.name == 'sample_script_1'
     runs-on: ubuntu-latest
     steps:
-      - name: job_1
+      - name: Job for Develop Branch
         run: |
-          echo "sample job 2 - PR merged into develop"
-    
+          echo "✅ sample job 2 - PR merged into develop"
+
   sample_job_21:
-    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.workflows.name == 'main_script_1'
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.name == 'main_script_1'
     runs-on: ubuntu-latest
     steps:
-      - name: job_21
+      - name: Job for Main Branch
         run: |
-          echo "sample job 2 - PR merged into main"
+          echo "✅ sample job 2 - PR merged into main"
