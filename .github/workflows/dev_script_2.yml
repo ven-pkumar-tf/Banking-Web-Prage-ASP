@@ -8,7 +8,7 @@ on:
       - completed
 jobs:
   sample_job_1:
-    if: github.event.workflow_run.workflow == 'sample_script_1' && github.event.workflow_run.conclusion == 'success'
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.workflow == 'sample_script_1' 
     runs-on: ubuntu-latest
     steps:
       - name: job_1
