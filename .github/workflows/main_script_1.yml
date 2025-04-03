@@ -1,0 +1,17 @@
+name: main_script_1
+on:
+  pull_request:
+      types: [closed]
+      branches:
+        - main
+
+
+jobs:
+  sample_job_1:
+    if : github.event.pull_request.base.ref == 'main' && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: job_1
+        run: |
+          echo "main job 1"
+      
