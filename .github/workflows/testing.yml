@@ -11,11 +11,31 @@ jobs:
       DOTNET_VERSION: "6.0.x"
       STORAGE_ACCOUNT: "terraform0sa1"
       CONTAINER_NAME: "edial-function-app"
+      CLIENT_ID: ${{ secrets.CLIENT_ID }}
       
     steps:
       - name: "Checkout GitHub Action"
         uses: actions/checkout@v3
+      - name: Store Secrets in a File
+        shell: pwsh
+        run: |
+          $clientId = "${{ secrets.CLIENT_ID }}"
 
+          if (-not $clientId) { Write-Host "❌ CLIENT_ID is missing" }
+ 
+          "client-id: $clientId" | Set-Content -Path secrets.txt
+
+      - name: Upload Secret File as an Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: secret_artifact
+          path: secrets.txt
+      - name: Azure CLI Action
+        uses: Azure/cli@v2.1.0
+        with:
+          # Specify the script here
+          inlineScript: 
+            az login --service-principal --username "d693b53d-6ea8-4242-81eb-deb5d5ce0f64" --password "Xis8Q~iazO69SeWpjFRKAxYhBUMsjkytfMoSCbFk" --tenant "f5f02767-508e-4b78-bc05-2b16c8a081a1"      
       - name: "Azure Login"
         run: |
           az login --service-principal --username ${{ secrets.C2S_CLIENT_ID }} --password ${{ secrets.C2S_CLIENT_SECRET }} --tenant ${{ secrets.C2S_TENANT_ID }}
