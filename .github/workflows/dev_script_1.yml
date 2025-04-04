@@ -1,10 +1,9 @@
 name: sample_script_1
 on:
-  pull_request:
-      types: [closed]
-      branches:
-        - develop
-
+  workflow_dispatch:
+  push:
+    branches:
+      - develop
 
 jobs:
   sample_job_1:
